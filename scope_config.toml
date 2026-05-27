@@ -8,6 +8,6 @@ session_description = "This is a test"
 averages = 256
 start_bound = 1.0e-6
 end_bound = 7.0e-6
-area = false
+area = true
 waveform = true
 trigger = false
