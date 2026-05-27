@@ -119,7 +119,7 @@ class DPO7104_TekTronix_scope(RexSupport):
         if not self.scope:
             raise RuntimeError("Scope connection is not open. Call test_connection first.")
 
-        self.full_autoset()
+        #self.full_autoset()
 
         self.scope.write("TRIGger:A:TYPe EDGE")
         self.scope.write("TRIGger:A:EDGE:SOUrce CH2") 
