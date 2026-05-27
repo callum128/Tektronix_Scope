@@ -8,21 +8,41 @@ from rex_utils import Measurement, RexSupport
 
 
 class DPO7104_TekTronix_scope(RexSupport):
-    """Class for controlling the DPO7104 TekTronix oscilloscope via GPIB-USB pyvisa.
+    """Class for controlling a Tektronix DPO7104 oscilloscope via GPIB-USB using PyVISA.
     
+    This driver handles device connection, baseline configuration, and iterative vertical 
+    scaling adjustment to prevent signal clipping and optimize dynamic range for negative 
+    transient signals (e.g., PMT pulses).
+
     Attributes:
-    
+        state (int): A counter that increments with every successful measurement cycle.
+        connect_to_rex (bool): Flag indicating whether to forward data payloads to a Rex server link.
+        sock (socket or None): The TCP socket connection used when connect_to_rex is enabled.
+        scope (MessageBasedResource or None): The PyVISA message-based resource pointer for the physical scope.
+        measurements (dict): Container for compiled measurement results. Holds 'area', 'waveform', 
+            'trigger', and 'time_from_trigger' as Measurement objects.
+        averages (int): The number of hardware waveform acquisitions to average over.
+        start_bound (float): The left position boundary for the gated measurement relative to the trigger.
+        end_bound (float): The right position boundary for the gated measurement relative to the trigger.
+        area_enabled (bool): Boolean flag stating whether area integrations should be captured.
+        waveform_enabled (bool): Boolean flag stating whether Channel 1 waveforms should be pulled.
+        trigger_enabled (bool): Boolean flag stating whether Channel 2 trigger waveforms should be pulled.
+        v_peak (float): The absolute peak negative voltage captured during clipping checks.
+
     Methods:
-        set_config(): Configures.
-        set_cursors(): Sets the cursors on the scope for channel 1, relative to the trigger.
-        measure_area(): Pulls the area between the cursors.
-        measure_waveform(channel=1): Pull the entire waveform, channel 1 for the data, channel 2 form the trigger. Slow.
-        full_autoset(): Full autosetup, only done at the start. Very slow.
-        quick_autoset(): Quick autosetup of the vertical bounds. Use to keep the waveform filling the screen. Fast.
-        check_clipping(): Checks if the waveform minimum.
-        reset(): Return the scope to the default settings.
-        close(): Close the connection to the scope. 
-        test_connection(): Check pyvisa resourse manager, address and then checks a basic ID query to the scope.
+        test_connection(): Establishes the PyVISA connection and validates the instrument identity string.
+        set_config(): Imports active configuration values, executes a full autoset, and binds 
+            acquisition and trigger criteria (Edge, Fall, Channel 2 Source).
+        set_cursors(): Enables and positions vertical bars on the scope for gated Channel 1 area calculations.
+        measure_area(): Queries the scope's gated area calculation and transforms it to account for negative PMT polarity.
+        measure_waveform(channel=1): Downloads raw binary ADC curves from the specified channel, scales them 
+            into true voltages using preamble multipliers, and builds a time-axis relative to the trigger.
+        measure(): Orchestrates the enabled acquisition routines (area and/or waveforms) and pushes payloads to Rex.
+        full_autoset(): Commands the scope hardware to execute its slow native autoset sequence (*OPC? blocking).
+        quick_autoset(max_iterations=5): Iteratively steps the vertical Volts/Div scale up or down over multiple 
+            loops to ensure negative transients fill ~7 divisions of the screen without clipping.
+        check_clipping(): Measures the absolute peak minimum voltage on Channel 1 and caches it to self.v_peak.
+        close(): Safely closes the PyVISA session to free up the GPIB resource interface.
     """
 
     #pyvisa settings
@@ -121,7 +141,7 @@ class DPO7104_TekTronix_scope(RexSupport):
         self.scope.write('MEASUrement:GATing ON')
         self.scope.write('MEASUrement:IMMed:TYPE AREA')
         self.scope.write(f'MEASUrement:IMMed:SOUrce CH1')
-        time.sleep(0.1)
+        time.sleep(0.5)
 
     def measure_area(self):
         self.scope.write('MEASUrement:IMMEd:STATE ON')
