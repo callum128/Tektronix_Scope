@@ -128,10 +128,10 @@ class DPO7104_TekTronix_scope(RexSupport):
         self.scope.write(f"ACQuire:MODe AVErage")
         self.scope.write(f"ACQuire:NUMAVg {self.averages}") 
 
-        v_position = 3.5
+        v_position = 0 #3.5 for actaul PMT data
 
         self.scope.write("*CLS")
-        self.scope.write(f'CH1:POSition {3.5}')
+        self.scope.write(f'CH1:POSition {v_position}')
 
     def set_cursors(self): 
         self.scope.write('CURSor:STATE ON') 
@@ -214,7 +214,7 @@ class DPO7104_TekTronix_scope(RexSupport):
         self.scope.query("*OPC?")
         self.scope.write("AUToset EXECute")
 
-    def quick_autoset(self, max_iterations=5):
+    def quick_autoset(self, max_iterations=5): #doesn't work yet, at least not for function generator tests
         """Only works for signals that are strictly negative, like PMT pulses. 
         Loops and adjusts the vertical scale until the scale changes by less than 10%,
         or until max_iterations is reached. Much faster than full autoset.
