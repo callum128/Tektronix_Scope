@@ -1,0 +1,10 @@
+[session]
+UUID = "963ab723-6917-4bcb-9f68-7b30f2bf333a"
+end_time = "2026-05-27T00:32:23.7125897Z"
+start_time = "2026-05-27T00:32:14.8403329Z"
+
+[session.info]
+email = "ccl128@uclive.ac.nz"
+name = "Callum Clausen"
+session_description = "This is a test"
+session_name = "Test_Scope_Driver"
