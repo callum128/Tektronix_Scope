@@ -58,7 +58,6 @@ class DPO7104_TekTronix_scope(RexSupport):
             "area": {"_value": True, "_description": "Pulls area data"},
             "waveform": {"_value": False, "_description": "Pulls wavefrom data, channel 1"},
             "trigger": {"_value": False, "_description": "Pulls trigger waveform data, channel 2"},
-            "time_from_trigger" : {"_value": False, "_description": "Pulls time axis data, subtracting the trigger position, both channels should be the same"}
         }
     }
 
