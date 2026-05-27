@@ -38,7 +38,8 @@ class DPO7104_TekTronix_scope(RexSupport):
             "end_bound": {"_value": 1.0e-6, "_description": "Ending bound, the position of the second cursor relative to the trigger"},
             "area": {"_value": True, "_description": "Pulls area data"},
             "waveform": {"_value": False, "_description": "Pulls wavefrom data, channel 1"},
-            "trigger": {"_value": False, "_description": "Pulls trigger waveform data, channel 2"}
+            "trigger": {"_value": False, "_description": "Pulls trigger waveform data, channel 2"},
+            "time_from_trigger" : {"_value": False, "_description": "Pulls time axis data, subtracting the trigger position, both channels should be the same"}
         }
     }
 
@@ -110,6 +111,7 @@ class DPO7104_TekTronix_scope(RexSupport):
         self.scope.write(f"ACQuire:NUMAVg {self.averages}") 
 
         self.scope.write("*CLS")
+        self.scope.write(f'CH1:POSition -3.5')
 
     def set_cursors(self): 
         self.scope.write('CURSor:STATE ON') 
@@ -195,7 +197,6 @@ class DPO7104_TekTronix_scope(RexSupport):
     def quick_autoset(self):
         """Only works for signals that are strictly positive or negative, like PMT pulses. May need to run multiple times if the initial scale is very far off, but much faster than full autoset."""
         # 1. Position the baseline at the bottom (-3.5 div) or top (+3.5 div)
-        self.scope.write(f'CH1:POSition -3.5')
         
         # 2. Get the Peak (Max) or Base (Min) for unipolar scaling
         # We use 'Maximum' for positive-going spectra
