@@ -19,8 +19,7 @@ class DPO7104_TekTronix_scope(RexSupport):
         measure_waveform(channel=1): Pull the entire waveform, channel 1 for the data, channel 2 form the trigger. Slow.
         full_autoset(): Full autosetup, only done at the start. Very slow.
         quick_autoset(): Quick autosetup of the vertical bounds. Use to keep the waveform filling the screen. Fast.
-        check_clipping(): Checks if the waveform if off the screen. 
-        check_small(): Checks if the waveform is too small for good signal.
+        check_clipping(): Checks if the waveform minimum.
         reset(): Return the scope to the default settings.
         close(): Close the connection to the scope. 
         test_connection(): Check pyvisa resourse manager, address and then checks a basic ID query to the scope.
@@ -194,18 +193,40 @@ class DPO7104_TekTronix_scope(RexSupport):
         self.scope.query("*OPC?")
         self.scope.write("AUToset EXECute")
 
-    def quick_autoset(self):
-        """Only works for signals that are strictly positive or negative, like PMT pulses. May need to run multiple times if the initial scale is very far off, but much faster than full autoset."""
-        self.check_clipping()
-        current_scale = float(self.scope.query(f'CH1:SCAle?'))
-        # We want the peak to reach ~7 divisions high (leaving 1 div headroom)
-        target_scale = self.v_peak / 7.0 
-        
-        # 4. Update if change is > 10%
-        if abs(target_scale - current_scale) / current_scale > 0.10:
-            # Enforce a minimum scale to avoid chasing noise
-            final_scale = max(target_scale, 0.001) 
-            self.scope.write(f'CH1:SCAle {final_scale:.4f}') #may need more decimals
+    def quick_autoset(self, max_iterations=5):
+        """Only works for signals that are strictly negative, like PMT pulses. 
+        Loops and adjusts the vertical scale until the scale changes by less than 10%,
+        or until max_iterations is reached. Much faster than full autoset.
+        """
+        for iteration in range(max_iterations):
+            self.check_clipping()
+            current_scale = float(self.scope.query(f'CH1:SCAle?'))
+
+            if self.v_peak < 1e-4: 
+                self.logger.warning("Signal too small or flatlined. Dropping scale to look for transient.")
+                # Aggressively drop the scale to search for the small transient
+                self.scope.write(f'CH1:SCAle {current_scale / 2.0:.4f}') #probaly need to adjust this bit
+                time.sleep(0.2)
+                continue
+            
+            # We want the peak to reach ~7 divisions high (leaving 1 div headroom)
+            target_scale = self.v_peak / 7.0
+            
+            # Check if the change is greater than 10%
+            scale_change = abs(target_scale - current_scale) / current_scale
+            if scale_change > 0.10:
+                # Enforce a minimum scale to avoid chasing noise
+                final_scale = max(target_scale, 0.001) #probaly need to adjust this noise floor a bit
+                self.scope.write(f'CH1:SCAle {final_scale:.4f}') #may need more decimals
+                
+                # Small delay to let the scope hardware/autoset settle before checking again
+                time.sleep(0.2)
+            else:
+                # The scale is stable (change is <= 10%), we can stop looping
+                self.logger.debug(f"Quick autoset converged after {iteration + 1} iterations.")
+                break
+        else:
+            self.logger.warning("Quick autoset reached max iterations without perfectly settling.")
 
     def check_clipping(self):
         self.scope.write(f'MEASUrement:IMMed:TYPE MINimum')

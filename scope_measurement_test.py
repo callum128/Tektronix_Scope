@@ -9,10 +9,13 @@ def test_scope_experiment():
     def scope_measurement(config) -> None:
         # connect to a device, inherit its config & loop through its functions. ideally, all devices should have some "measure" like
         # function that handles sending the data over the socket.
-        daq = DPO7104_TekTronix_scope(config, connect_to_rex=True)
+        tektronix = DPO7104_TekTronix_scope(config, connect_to_rex=True)
+        tektronix.set_cursors()
         for i in range(5):
-            daq.measure()
-            time.sleep(1)
+            tektronix.quick_autoset()
+            tektronix.measure()
+            time.sleep(0.1)
+        tektronix.close()
 
         return
 
