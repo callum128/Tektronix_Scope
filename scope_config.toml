@@ -7,7 +7,7 @@ session_description = "This is a test"
 [device.DPO7104_TekTronix_scope]
 averages = 256
 start_bound = 1.0e-6
-end_bound = 7.0e-6
+end_bound = 8.0e-6
 area = true
 waveform = false
 trigger = false
