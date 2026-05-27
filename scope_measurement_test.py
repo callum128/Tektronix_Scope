@@ -11,8 +11,8 @@ def test_scope_experiment():
         # function that handles sending the data over the socket.
         tektronix = DPO7104_TekTronix_scope(config, connect_to_rex=True)
         tektronix.set_cursors()
-        for i in range(5):
-            tektronix.quick_autoset()
+        for i in range(2):
+            #tektronix.quick_autoset()
             tektronix.measure()
             time.sleep(0.1)
         tektronix.close()

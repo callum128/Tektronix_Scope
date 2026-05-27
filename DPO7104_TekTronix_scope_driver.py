@@ -98,7 +98,7 @@ class DPO7104_TekTronix_scope(RexSupport):
                     self.scope.timeout = 25000 
                     
                     try:
-                        TRUE_NAME = 'TEKTRONIX'  # Note: *IDN? usually returns a longer string like 'TEKTRONIX,DPO7104,...'
+                        TRUE_NAME = 'TEKTRONIX,DPO7104,B069280,CF:91.1CT FV:5.3.5 Build 22'  
                         idn = self.scope.query("*IDN?").strip()
                         if TRUE_NAME not in idn:  # Using 'in' is safer than '==' for *IDN?
                             raise Exception(f"Unexpected Scope ID: {idn} is not {TRUE_NAME}")
@@ -122,15 +122,17 @@ class DPO7104_TekTronix_scope(RexSupport):
         self.full_autoset()
 
         self.scope.write("TRIGger:A:TYPe EDGE")
-        self.scope.write("TRIGger:A:EDGE:SOUrce CH2")
+        self.scope.write("TRIGger:A:EDGE:SOUrce CH2") 
         self.scope.write("TRIGger:A:EDGE:SLOPe FALL") 
         self.scope.write("TRIGger:A SETLevel")
 
         self.scope.write(f"ACQuire:MODe AVErage")
         self.scope.write(f"ACQuire:NUMAVg {self.averages}") 
 
+        v_position = 3.5
+
         self.scope.write("*CLS")
-        self.scope.write(f'CH1:POSition -3.5')
+        self.scope.write(f'CH1:POSition {3.5}')
 
     def set_cursors(self): 
         self.scope.write('CURSor:STATE ON') 
