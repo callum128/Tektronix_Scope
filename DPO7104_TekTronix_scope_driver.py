@@ -196,38 +196,22 @@ class DPO7104_TekTronix_scope(RexSupport):
 
     def quick_autoset(self):
         """Only works for signals that are strictly positive or negative, like PMT pulses. May need to run multiple times if the initial scale is very far off, but much faster than full autoset."""
-        # 1. Position the baseline at the bottom (-3.5 div) or top (+3.5 div)
-        
-        # 2. Get the Peak (Max) or Base (Min) for unipolar scaling
-        # We use 'Maximum' for positive-going spectra
-        self.scope.write(f'MEASUrement:IMMed:TYPE MINimum')
-        self.scope.write(f'MEASUrement:IMMed:SOUrce CH1')
-        
-        v_peak = abs(float(self.scope.query('MEASUrement:IMMed:VALue?')))
+        self.check_clipping()
         current_scale = float(self.scope.query(f'CH1:SCAle?'))
-
-        # 3. Calculate target scale
         # We want the peak to reach ~7 divisions high (leaving 1 div headroom)
-        target_scale = v_peak / 7.0 
+        target_scale = self.v_peak / 7.0 
         
         # 4. Update if change is > 10%
         if abs(target_scale - current_scale) / current_scale > 0.10:
             # Enforce a minimum scale to avoid chasing noise
             final_scale = max(target_scale, 0.001) 
-            self.scope.write(f'CH1:SCAle {final_scale:.4f}')
-            #print(f"Adjusted Scale to: {final_scale:.4f} V/div for unipolar negative signal")
+            self.scope.write(f'CH1:SCAle {final_scale:.4f}') #may need more decimals
 
-    def check_clipping(self) -> bool:
-        #need to figure this out, hopefully some command will get this maybe *ESR?
-        #else will need to check min against the scale
-        #DOESN'T QUICK AUTOSET ALREADY DO THIS CHECK???!
-        return False
-    
-    def check_small(self) -> bool:
-        #need to figure this out, hopefully some command will get this maybe *ESR?
-        #may also not be possible...
-        #DOES QUICK AUTOSET SO THIS?? THE abs(target_scale - current_scale) / current_scale > 0.10
-        return False
+    def check_clipping(self):
+        self.scope.write(f'MEASUrement:IMMed:TYPE MINimum')
+        self.scope.write(f'MEASUrement:IMMed:SOUrce CH1')
+        
+        self.v_peak = abs(float(self.scope.query('MEASUrement:IMMed:VALue?')))
         
     def close(self):
         if self.scope:
