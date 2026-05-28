@@ -5,9 +5,9 @@ session_name = "Test_Scope_Driver"
 session_description = "This is a test"
 
 [device.DPO7104_TekTronix_scope]
-averages = 256
+averages = 2
 start_bound = 1.0e-6
-end_bound = 7.0e-6
+end_bound = 7.0e-3
 area = true
 waveform = true
 trigger = false

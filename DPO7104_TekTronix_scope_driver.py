@@ -39,8 +39,6 @@ class DPO7104_TekTronix_scope(RexSupport):
             into true voltages using preamble multipliers, and builds a time-axis relative to the trigger.
         measure(): Orchestrates the enabled acquisition routines (area and/or waveforms) and pushes payloads to Rex.
         full_autoset(): Commands the scope hardware to execute its slow native autoset sequence (*OPC? blocking).
-        quick_autoset(max_iterations=5): Iteratively steps the vertical Volts/Div scale up or down over multiple 
-            loops to ensure negative transients fill ~7 divisions of the screen without clipping.
         check_clipping(): Measures the absolute peak minimum voltage on Channel 1 and caches it to self.v_peak.
         close(): Safely closes the PyVISA session to free up the GPIB resource interface.
     """
@@ -52,7 +50,7 @@ class DPO7104_TekTronix_scope(RexSupport):
     __toml_config__ = {
         "device.DPO7104_TekTronix_scope": {
             "_section_description": "DPO7104_TekTronix_scope configuration",
-            "averages": {"_value": 512, "_description": "Number of averages"},
+            "averages": {"_value": 2, "_description": "Number of averages"}, #if put 1, scope sets to 2
             "start_bound": {"_value": 0.0, "_description": "Starting bound, the position of the first cursor relative to the trigger"},
             "end_bound": {"_value": 1.0e-6, "_description": "Ending bound, the position of the second cursor relative to the trigger"},
             "area": {"_value": True, "_description": "Pulls area data"},
@@ -128,10 +126,10 @@ class DPO7104_TekTronix_scope(RexSupport):
         self.scope.write(f"ACQuire:MODe AVErage")
         self.scope.write(f"ACQuire:NUMAVg {self.averages}") 
 
-        v_position = 0 #3.5 for actaul PMT data
-
-        self.scope.write("*CLS")
+        v_position = 3.5 #3.5 for actaul PMT data
         self.scope.write(f'CH1:POSition {v_position}')
+
+        self.scope.write("*CLS") #may need to move for each measurement loop if scope gets backed up with data
 
     def set_cursors(self): 
         self.scope.write('CURSor:STATE ON') 
@@ -161,7 +159,7 @@ class DPO7104_TekTronix_scope(RexSupport):
         self.scope.write("DATa:ENCdg RIBINARY")
         self.scope.write("DATa:WIDth 2") 
         self.scope.write("DATa:STARt 1")
-        self.scope.write("DATa:STOP 100000") #will take ~1.5s
+        self.scope.write("DATa:STOP 100000") #will take ~2s
 
         # Query scaling parameters from the preamble
         y_mult = float(self.scope.query("WFMOutpre:YMUlt?"))
@@ -171,7 +169,13 @@ class DPO7104_TekTronix_scope(RexSupport):
         x_zero = float(self.scope.query("WFMOutpre:XZEro?"))
         trigger_pos = float(self.scope.query("HORizontal:MAIn:SCAle?"))
 
+        self.scope.write("ACQuire:STOPAfter SEQuence") #stop the acquisition to prevent overwriting the buffer while we're reading it, will need to start it again after
+
         adc_samples = np.array(self.scope.query_binary_values("CURVe?", datatype='h', is_big_endian=True))
+
+        self.scope.write("ACQuire:STOPAfter RUNSTOP")
+        self.scope.write("ACQuire:STATE RUN") #restart the acquisition for the next loop, may need to move this if we find scope gets backed up with data
+
         voltages = (adc_samples - y_off) * y_mult + y_zero
         time_axis = np.arange(adc_samples.size) * x_incr + x_zero - trigger_pos #relative to trigger
 
@@ -195,6 +199,8 @@ class DPO7104_TekTronix_scope(RexSupport):
             )
         
     def measure(self):
+        self.scope.write("*CLS") #clear the status to prevent overflow
+
         if self.area_enabled:
             self.measure_area()
         if self.waveform_enabled:
