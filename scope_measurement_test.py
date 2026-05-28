@@ -12,7 +12,6 @@ def test_scope_experiment():
         tektronix = DPO7104_TekTronix_scope(config, connect_to_rex=True)
         tektronix.set_cursors()
         for i in range(1):
-            #tektronix.quick_autoset() #not working yet
             tektronix.measure()
             time.sleep(0.1)
         tektronix.close()
