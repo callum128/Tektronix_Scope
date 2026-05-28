@@ -50,9 +50,9 @@ class DPO7104_TekTronix_scope(RexSupport):
     __toml_config__ = {
         "device.DPO7104_TekTronix_scope": {
             "_section_description": "DPO7104_TekTronix_scope configuration",
-            "averages": {"_value": 2, "_description": "Number of averages"}, #if put 1, scope sets to 2
+            "averages": {"_value": 1, "_description": "Number of averages"}, #set to 1 for non-averaged data, set to >1 for averaged data, but be aware this will slow down your acquisition loop significantly as the scope needs to acquire and process multiple waveforms for each measurement cycle
             "start_bound": {"_value": 0.0, "_description": "Starting bound, the position of the first cursor relative to the trigger"},
-            "end_bound": {"_value": 1.0e-6, "_description": "Ending bound, the position of the second cursor relative to the trigger"},
+            "end_bound": {"_value": 1.0e-4, "_description": "Ending bound, the position of the second cursor relative to the trigger"},
             "area": {"_value": True, "_description": "Pulls area data"},
             "waveform": {"_value": False, "_description": "Pulls wavefrom data, channel 1"},
             "trigger": {"_value": False, "_description": "Pulls trigger waveform data, channel 2"},
@@ -123,8 +123,11 @@ class DPO7104_TekTronix_scope(RexSupport):
         self.scope.write("TRIGger:A:EDGE:SLOPe FALL") 
         self.scope.write("TRIGger:A SETLevel")
 
-        self.scope.write(f"ACQuire:MODe AVErage")
-        self.scope.write(f"ACQuire:NUMAVg {self.averages}") 
+        if self.averages == 1:
+            self.scope.write(f"ACQuire:MODe SAMple")
+        else:
+            self.scope.write(f"ACQuire:MODe AVErage")
+            self.scope.write(f"ACQuire:NUMAVg {self.averages}") 
 
         v_position = 3.5 #3.5 for actaul PMT data
         self.scope.write(f'CH1:POSition {v_position}')

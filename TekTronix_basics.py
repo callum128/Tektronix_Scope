@@ -20,9 +20,11 @@ try:
 
     print(scope.query("*IDN?").strip())
 
+    scope.write(f"ACQuire:MODe SAMple") #set to sample
+
     scope.write(f"DATa:SOUrce CH{channel}")
     scope.write("DATa:ENCdg RIBINARY")
-    scope.write("DATa:WIDth 2") #1, 2, 3, 4 don't work
+    scope.write("DATa:WIDth 2") #1 byte, 2 byte, 4 byte, 8 byte data width. 2 byte is typical for Tektronix scopes, but check your scope's documentation to be sure. Using the wrong width can lead to incorrect data scaling and interpretation.
     scope.write("DATa:STARt 1")
     scope.write("DATa:STOP 100000") 
 
