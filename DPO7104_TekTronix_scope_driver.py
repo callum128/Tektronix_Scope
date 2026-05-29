@@ -44,7 +44,7 @@ class DPO7104_TekTronix_scope(RexSupport):
     """
 
     #pyvisa settings
-    RESOURCE_MANAGER = "@ivi"
+    RESOURCE_MANAGER = '' #default to pyvisa's default backend, but can be set to "@ivi" or other backends if needed for compatibility with specific GPIB-USB adapters or drivers. Check pyvisa documentation for details on available backends and their compatibility with your hardware setup.
     SCOPE_ADDRESS = "GPIB0::1::INSTR"
 
     __toml_config__ = {

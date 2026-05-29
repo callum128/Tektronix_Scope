@@ -10,8 +10,10 @@ moving_mecrury_lamp = "Outputs/Test_Scope_Driver_28_05_2026_16_04_05_248.toml" #
 moving_mecrury_lamp_2 = "Outputs/Test_Scope_Driver_28_05_2026_15_52_08_770.toml" #manually moving the spectrometer, on, off, off, on, on
 test_stop = "Outputs/Test_Scope_Driver_28_05_2026_16_40_47_022.toml"
 moving_mecrury_lamp_3 = "Outputs/Test_Scope_Driver_28_05_2026_16_45_22_142.toml" #manually moving the spectrometer, 543.1, 543.2, 543.3(on), 543.4 nm
+trigger = "Outputs/Test_Scope_Driver_29_05_2026_11_44_57_966.toml"
+test = 'Outputs/Test_Scope_Driver_29_05_2026_12_35_44_419.toml'
 
-data_path = Path(__file__).parent / moving_mecrury_lamp_3
+data_path = Path(__file__).parent / test
 
 # Read in the rex toml data format, reads in only the .data layer, ignoring configurations etc.This handles importing nested data
 
@@ -27,29 +29,30 @@ data = load_rex_data(data_path, "polars")
 
 #print(data.head())
 
-#sample_number = 0 #each times the experiment loops is a 'sample'
+sample_number = 0 #each times the experiment loops is a 'sample'
 
-#waveforms = np.array(data['DPO7104_TekTronix_scope']['waveform'][sample_number])
-#times = np.array(data['DPO7104_TekTronix_scope']['time_from_trigger'][sample_number])
-#area = np.array(data['DPO7104_TekTronix_scope']['area'][sample_number])
-#print(area)
+waveforms = np.array(data['DPO7104_TekTronix_scope_waveform'][sample_number])
+times = np.array(data['DPO7104_TekTronix_scope_time_from_trigger'][sample_number])
+area = np.array(data['DPO7104_TekTronix_scope_area'][sample_number])
+print(area)
 
-# fig, ax = plt.subplots()
-# ax.plot(times, waveforms, '.', label=f"Sample {sample_number}\n Area {area}")  
-# plt.title("Oscilloscope Waveform")
-# plt.xlabel("Time from Trigger (s)")
-# plt.ylabel("Voltage (V)")
-# plt.legend()
-# plt.show()
-samples = range(4)
-fig, ax = plt.subplots(len(samples), sharey=True, figsize=(10, 6))
-ax[0].set_ylim(-0.12, 0.02) #adjust as needed based on expected PMT pulse amplitude
-for i, sample in enumerate(samples):
-    waveforms = np.array(data['DPO7104_TekTronix_scope_waveform'][i])
-    times = np.array(data['DPO7104_TekTronix_scope_time_from_trigger'][i])
-    area = np.array(data['DPO7104_TekTronix_scope_area'][i])
-    ax[i].plot(times, waveforms, 'k.', label=f"Sample {sample}\n Area {area:.4e}")  
-    ax[i].set_xlabel("Time from Trigger (s)")
-    ax[i].set_ylabel("Voltage (V)")
-    ax[i].legend(loc='lower right')
+fig, ax = plt.subplots()
+ax.plot(times, waveforms, '.', label=f"Sample {sample_number}\n Area {area}")  
+plt.title("Oscilloscope Waveform")
+plt.xlabel("Time from Trigger (s)")
+plt.ylabel("Voltage (V)")
+plt.legend()
 plt.show()
+
+# samples = range(2)
+# fig, ax = plt.subplots(len(samples), sharey=True, figsize=(10, 6))
+# ax[0].set_ylim(-0.12, 0.02) #adjust as needed based on expected PMT pulse amplitude
+# for i, sample in enumerate(samples):
+#     waveforms = np.array(data['DPO7104_TekTronix_scope_waveform'][i])
+#     times = np.array(data['DPO7104_TekTronix_scope_time_from_trigger'][i])
+#     area = np.array(data['DPO7104_TekTronix_scope_area'][i])
+#     ax[i].plot(times, waveforms, 'k.', label=f"Sample {sample}\n Area {area:.4e}")  
+#     ax[i].set_xlabel("Time from Trigger (s)")
+#     ax[i].set_ylabel("Voltage (V)")
+#     ax[i].legend(loc='lower right')
+# plt.show()

@@ -5,20 +5,23 @@ import pyvisa
 from scipy import integrate
 
 SCOPE_ADDRESS = 'GPIB0::1::INSTR'
-RESOURCE_MANAGER = "@ivi"
+#RESOURCE_MANAGER = "@ivi"
 
-rm = pyvisa.ResourceManager(RESOURCE_MANAGER)
+rm = pyvisa.ResourceManager()
 scope = None
 channel = 1
 
+print(rm.list_resources())
 print("Connecting to oscilloscope...")
-#print(rm.list_resources())
+
 
 try:
     scope = rm.open_resource(SCOPE_ADDRESS)
     scope.timeout = 25000 
 
     print(scope.query("*IDN?").strip())
+
+    #breakpoint()
 
     scope.write(f"ACQuire:MODe SAMple") #set to sample
 
@@ -41,7 +44,7 @@ try:
     scope.write("ACQuire:STOPAfter SEQuence")
 
     # Read binary block data directly into a numpy array
-    adc_samples = np.array(scope.query_binary_values("CURVe?", datatype='h', is_big_endian=True)) #b, h, d, f all don't work
+    adc_samples = np.array(scope.query_binary_values("CURVe?", datatype='h', is_big_endian=True)) #b, h, d, f depending on the data width set above. 'h' is 2 byte signed integer, which is common for Tektronix scopes. Adjust as needed based on your scope's data format and the width you set. The is_big_endian flag may also need to be adjusted based on your scope's data format. Check your scope's documentation for details on the binary data format it uses.
 
     print(f"Read {adc_samples.size} ADC samples from scope")
     scope.write("ACQuire:STOPAfter RUNSTOP")
