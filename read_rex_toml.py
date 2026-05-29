@@ -1,8 +1,38 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy import integrate
 
 from pathlib import Path
 from rex_utils import load_rex_data
+
+def trigger_dependent_custom_integration(time_axis, voltages, start_time, end_time):
+    """Integrate the waveform in a window defined relative to the trigger. NOPE, THE TIME AXIS IS ALREADY RELATIVE TO THE TRIGGER, SO JUST USE THE OFFSETS AS ABSOLUTE TIMES"""
+    
+    print(f"Integrating from {start_time:.3e} s to {end_time:.3e} s relative to trigger at zero seconds")
+
+    start_index = np.searchsorted(time_axis, start_time, side="left")
+    end_index = np.searchsorted(time_axis, end_time, side="right")
+
+    if start_index < 0 or end_index > len(voltages) or start_index >= end_index:
+        raise ValueError("Integration bounds are out of range of the data")
+
+    # if START_OFFSET_S < 0:
+    #     print("!!!Warning: Start offset is negative. This breaks the comparison with the scope's gated area measurement, which uses the actual time axis for integration. The calculated area may differ from the scope's measurement due to this offset.")
+    #     shifted_time_axis = time_axis + 1e-5 #shift time axis to avoid negative times for integration, doesn't change the relative positions of the points, just makes it easier to interpret the integration window
+    #     shifted_voltages = voltages
+    #     print(f"Start index for integration: {start_index}, shifted time at start index: {shifted_time_axis[start_index]:.3e} s")
+    #     integrated_value = integrate.trapezoid(
+    #         shifted_voltages[start_index:end_index], shifted_time_axis[start_index:end_index]
+    #     )
+    else:
+        #print(f"Start index for integration: {start_index}, time at start index: {time_axis[start_index]:.3e} s")
+        integrated_value = integrate.trapezoid(
+            voltages[start_index:end_index], time_axis[start_index:end_index] #doesn't match the scope's gated area measurement if negative offset
+        ) #trapezoid is worse, but more inline with what the scope area calculates
+
+    summed_value = np.sum(voltages[start_index:end_index])
+
+    return integrated_value, summed_value
 
 unlicpped = "Outputs/Test_Scope_Driver_27_05_2026_16_40_22_296.toml"
 bad_clipping = "Outputs/Test_Scope_Driver_27_05_2026_16_39_26_673.toml"
@@ -11,7 +41,8 @@ moving_mecrury_lamp_2 = "Outputs/Test_Scope_Driver_28_05_2026_15_52_08_770.toml"
 test_stop = "Outputs/Test_Scope_Driver_28_05_2026_16_40_47_022.toml"
 moving_mecrury_lamp_3 = "Outputs/Test_Scope_Driver_28_05_2026_16_45_22_142.toml" #manually moving the spectrometer, 543.1, 543.2, 543.3(on), 543.4 nm
 trigger = "Outputs/Test_Scope_Driver_29_05_2026_11_44_57_966.toml"
-test = 'Outputs/Test_Scope_Driver_29_05_2026_12_35_44_419.toml'
+test = 'Outputs/Test_Scope_Driver_29_05_2026_15_26_54_387.toml'
+blank = 'Outputs/Test_Scope_Driver_29_05_2026_15_22_32_054.toml'
 
 data_path = Path(__file__).parent / test
 
@@ -34,17 +65,20 @@ sample_number = 0 #each times the experiment loops is a 'sample'
 waveforms = np.array(data['DPO7104_TekTronix_scope_waveform'][sample_number])
 times = np.array(data['DPO7104_TekTronix_scope_time_from_trigger'][sample_number])
 area = np.array(data['DPO7104_TekTronix_scope_area'][sample_number])
-print(area)
+print(f'Area from the scope: {area:.4e}')
+
+trapezoidal_area, summed_area = trigger_dependent_custom_integration(times, waveforms, -1e-4, 7e-3) #match the toml
+print(f"Computed area from the waveform: {-trapezoidal_area:.4e}")
 
 fig, ax = plt.subplots()
-ax.plot(times, waveforms, '.', label=f"Sample {sample_number}\n Area {area}")  
+ax.plot(times, waveforms, '.', label=f"Sample {sample_number}\n Area {area:.4e}")  
 plt.title("Oscilloscope Waveform")
 plt.xlabel("Time from Trigger (s)")
 plt.ylabel("Voltage (V)")
 plt.legend()
 plt.show()
 
-# samples = range(2)
+# samples = range(4)
 # fig, ax = plt.subplots(len(samples), sharey=True, figsize=(10, 6))
 # ax[0].set_ylim(-0.12, 0.02) #adjust as needed based on expected PMT pulse amplitude
 # for i, sample in enumerate(samples):
