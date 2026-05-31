@@ -41,10 +41,14 @@ moving_mecrury_lamp_2 = "Outputs/Test_Scope_Driver_28_05_2026_15_52_08_770.toml"
 test_stop = "Outputs/Test_Scope_Driver_28_05_2026_16_40_47_022.toml"
 moving_mecrury_lamp_3 = "Outputs/Test_Scope_Driver_28_05_2026_16_45_22_142.toml" #manually moving the spectrometer, 543.1, 543.2, 543.3(on), 543.4 nm
 trigger = "Outputs/Test_Scope_Driver_29_05_2026_11_44_57_966.toml"
-test = 'Outputs/Test_Scope_Driver_29_05_2026_15_26_54_387.toml'
 blank = 'Outputs/Test_Scope_Driver_29_05_2026_15_22_32_054.toml'
+test = 'Outputs/Test_Scope_Driver_29_05_2026_15_41_52_436.toml'
 
-data_path = Path(__file__).parent / test
+pospos = 'Outputs/Pos_Pos_bounds_29_05_2026_15_50_14_959.toml'
+negpos = 'Outputs/Neg_Pos_far_bounds_29_05_2026_16_14_14_339.toml'
+negneg = 'Outputs/Neg_Neg_bounds_29_05_2026_16_18_42_839.toml'
+
+data_path = Path(__file__).parent / negneg
 
 # Read in the rex toml data format, reads in only the .data layer, ignoring configurations etc.This handles importing nested data
 
@@ -67,11 +71,22 @@ times = np.array(data['DPO7104_TekTronix_scope_time_from_trigger'][sample_number
 area = np.array(data['DPO7104_TekTronix_scope_area'][sample_number])
 print(f'Area from the scope: {area:.4e}')
 
-trapezoidal_area, summed_area = trigger_dependent_custom_integration(times, waveforms, -1e-4, 7e-3) #match the toml
-print(f"Computed area from the waveform: {-trapezoidal_area:.4e}")
+
+start, stop = -9e-4, -1e-4 #match the toml
+
+computed_area, summed_area = trigger_dependent_custom_integration(times, waveforms, start, stop)
+computed_area = -computed_area #negate to match the scope's convention of negative area for downward pulses, adjust as needed based on your specific waveform and expected pulse polarity
+print(f"Computed area from the waveform: {computed_area:.4e}")
+print(f'Difference compared to scope area: {computed_area / area:.2f} times the scope area')
+
+box_area =-1* (stop - start) * (abs(max(waveforms)) - abs(min(waveforms)))
+print(f"Area of the bounding box defined by the integration window and waveform amplitude: {box_area:.4e}")
+print(f"Box - Computed: {box_area - computed_area:.4e}")
 
 fig, ax = plt.subplots()
 ax.plot(times, waveforms, '.', label=f"Sample {sample_number}\n Area {area:.4e}")  
+plt.vlines(start, ymin=min(waveforms), ymax=max(waveforms), colors='r', linestyles='--', label="Start")
+plt.vlines(stop, ymin=min(waveforms), ymax=max(waveforms), colors='m', linestyles='--', label="Stop")
 plt.title("Oscilloscope Waveform")
 plt.xlabel("Time from Trigger (s)")
 plt.ylabel("Voltage (V)")
