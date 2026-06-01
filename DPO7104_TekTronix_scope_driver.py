@@ -83,7 +83,7 @@ class DPO7104_TekTronix_scope(RexSupport):
 
         self.validate_measurements()
 
-    def test_connection(self) -> None:
+    def test_connection(self):
             """Opens the resource manager and connects to the scope, saving it to self.scope."""
             try:
                 rm = pyvisa.ResourceManager(self.RESOURCE_MANAGER)

@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy import integrate
+from scipy import integrate, signal
 
 from pathlib import Path
 from rex_utils import load_rex_data
@@ -12,7 +12,15 @@ def trigger_dependent_custom_integration(time_axis, voltages, start_time, end_ti
 
     start_index = np.searchsorted(time_axis, start_time, side="left")
     end_index = np.searchsorted(time_axis, end_time, side="right")
+    plt.vlines(time_axis[start_index], ymin=min(voltages), ymax=max(voltages), colors='g', linestyles='--', label="Calculated Start Index")
+    plt.vlines(time_axis[end_index], ymin=min(voltages), ymax=max(voltages), colors='c', linestyles='--', label="Calculated End Index")
 
+    #Savgol filter
+    sav_voltages = np.array(signal.savgol_filter(voltages, 41, 3)) # window length 31, polynomial order 3
+    plt.plot(time_axis, sav_voltages, 'k', label="Smoothed Voltages")
+    plt.hlines(sav_voltages[start_index], xmin=min(time_axis), xmax=max(time_axis), colors='g', linestyles='--', label="Smoothed Start Level")
+    plt.hlines(sav_voltages[end_index], xmin=min(time_axis), xmax=max(time_axis), colors='c', linestyles='--', label="Smoothed End Level")
+    
     if start_index < 0 or end_index > len(voltages) or start_index >= end_index:
         raise ValueError("Integration bounds are out of range of the data")
 
@@ -27,10 +35,10 @@ def trigger_dependent_custom_integration(time_axis, voltages, start_time, end_ti
     else:
         #print(f"Start index for integration: {start_index}, time at start index: {time_axis[start_index]:.3e} s")
         integrated_value = integrate.trapezoid(
-            voltages[start_index:end_index], time_axis[start_index:end_index] #doesn't match the scope's gated area measurement if negative offset
+            sav_voltages[start_index:end_index], time_axis[start_index:end_index] #doesn't match the scope's gated area measurement if negative offset
         ) #trapezoid is worse, but more inline with what the scope area calculates
 
-    summed_value = np.sum(voltages[start_index:end_index])
+    summed_value = np.sum(sav_voltages[start_index:end_index])
 
     return integrated_value, summed_value
 
@@ -72,6 +80,7 @@ area = np.array(data['DPO7104_TekTronix_scope_area'][sample_number])
 print(f'Area from the scope: {area:.4e}')
 
 
+fig, ax = plt.subplots()
 start, stop = -9e-4, -1e-4 #match the toml
 
 computed_area, summed_area = trigger_dependent_custom_integration(times, waveforms, start, stop)
@@ -79,11 +88,11 @@ computed_area = -computed_area #negate to match the scope's convention of negati
 print(f"Computed area from the waveform: {computed_area:.4e}")
 print(f'Difference compared to scope area: {computed_area / area:.2f} times the scope area')
 
-box_area =-1* (stop - start) * (abs(max(waveforms)) - abs(min(waveforms)))
+box_area =-1* (8e-4) * (abs(max(waveforms)) - abs(min(waveforms)))
 print(f"Area of the bounding box defined by the integration window and waveform amplitude: {box_area:.4e}")
 print(f"Box - Computed: {box_area - computed_area:.4e}")
 
-fig, ax = plt.subplots()
+
 ax.plot(times, waveforms, '.', label=f"Sample {sample_number}\n Area {area:.4e}")  
 plt.vlines(start, ymin=min(waveforms), ymax=max(waveforms), colors='r', linestyles='--', label="Start")
 plt.vlines(stop, ymin=min(waveforms), ymax=max(waveforms), colors='m', linestyles='--', label="Stop")
