@@ -24,14 +24,6 @@ def trigger_dependent_custom_integration(time_axis, voltages, start_time, end_ti
     if start_index < 0 or end_index > len(voltages) or start_index >= end_index:
         raise ValueError("Integration bounds are out of range of the data")
 
-    # if START_OFFSET_S < 0:
-    #     print("!!!Warning: Start offset is negative. This breaks the comparison with the scope's gated area measurement, which uses the actual time axis for integration. The calculated area may differ from the scope's measurement due to this offset.")
-    #     shifted_time_axis = time_axis + 1e-5 #shift time axis to avoid negative times for integration, doesn't change the relative positions of the points, just makes it easier to interpret the integration window
-    #     shifted_voltages = voltages
-    #     print(f"Start index for integration: {start_index}, shifted time at start index: {shifted_time_axis[start_index]:.3e} s")
-    #     integrated_value = integrate.trapezoid(
-    #         shifted_voltages[start_index:end_index], shifted_time_axis[start_index:end_index]
-    #     )
     else:
         #print(f"Start index for integration: {start_index}, time at start index: {time_axis[start_index]:.3e} s")
         integrated_value = integrate.trapezoid(
@@ -66,7 +58,6 @@ data = load_rex_data(data_path, "polars")
 #data = load_rex_data(data_path, "pandas")
 # if you want to read in a full validated data session, the seesion flag will do this
 #data = load_rex_data(data_path, "session")
-
 # raw dictionary
 #data = load_rex_data(data_path, "dict")
 
@@ -102,15 +93,20 @@ plt.ylabel("Voltage (V)")
 plt.legend()
 plt.show()
 
-# samples = range(4)
-# fig, ax = plt.subplots(len(samples), sharey=True, figsize=(10, 6))
-# ax[0].set_ylim(-0.12, 0.02) #adjust as needed based on expected PMT pulse amplitude
-# for i, sample in enumerate(samples):
-#     waveforms = np.array(data['DPO7104_TekTronix_scope_waveform'][i])
-#     times = np.array(data['DPO7104_TekTronix_scope_time_from_trigger'][i])
-#     area = np.array(data['DPO7104_TekTronix_scope_area'][i])
-#     ax[i].plot(times, waveforms, 'k.', label=f"Sample {sample}\n Area {area:.4e}")  
-#     ax[i].set_xlabel("Time from Trigger (s)")
-#     ax[i].set_ylabel("Voltage (V)")
-#     ax[i].legend(loc='lower right')
-# plt.show()
+
+
+data_path2 = Path(__file__).parent / moving_mecrury_lamp_3
+data = load_rex_data(data_path2, "polars")
+samples = range(4)
+fig, ax = plt.subplots(len(samples), sharey=True, figsize=(10, 6))
+ax[0].set_ylim(-0.12, 0.02) #adjust as needed based on expected PMT pulse amplitude
+ax[0].set_title("Mercury Lamp Signal as the Spectrometer moves over a peak at 543.3 nm")
+for i, sample in enumerate(samples):
+    waveforms = np.array(data['DPO7104_TekTronix_scope_waveform'][i])
+    times = np.array(data['DPO7104_TekTronix_scope_time_from_trigger'][i])
+    area = np.array(data['DPO7104_TekTronix_scope_area'][i])
+    ax[i].plot(times, waveforms, 'k.', label=f"Sample {sample}\n Area {area:.4e}")  
+    ax[i].set_xlabel("Time from Trigger (s)")
+    ax[i].set_ylabel("Voltage (V)")
+    ax[i].legend(loc='lower right')
+plt.show()
