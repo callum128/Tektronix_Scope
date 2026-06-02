@@ -8,11 +8,10 @@ from rex_utils import Measurement, RexSupport
 
 
 class DPO7104_TekTronix_scope(RexSupport):
-    """Class for controlling a Tektronix DPO7104 oscilloscope via GPIB-USB using PyVISA.
+    """Class for controlling a Tektronix DPO7104 oscilloscope via Keysight Technologies GPIB-USB using PyVISA.
     
-    This driver handles device connection, baseline configuration, and iterative vertical 
-    scaling adjustment to prevent signal clipping and optimize dynamic range for negative 
-    transient signals (e.g., PMT pulses).
+    This driver handles device connection, baseline configuration, gated area measurements, waveform acquisition, 
+    and optional data forwarding to a Rex server link.
 
     Attributes:
         state (int): A counter that increments with every successful measurement cycle.
@@ -30,7 +29,7 @@ class DPO7104_TekTronix_scope(RexSupport):
         v_peak (float): The absolute peak negative voltage captured during clipping checks.
 
     Methods:
-        test_connection(): Establishes the PyVISA connection and validates the instrument identity string.
+        open_connection(): Establishes the PyVISA connection and validates the instrument identity string.
         set_config(): Imports active configuration values, executes a full autoset, and binds 
             acquisition and trigger criteria (Edge, Fall, Channel 2 Source).
         set_cursors(): Enables and positions vertical bars on the scope for gated Channel 1 area calculations.
@@ -71,7 +70,7 @@ class DPO7104_TekTronix_scope(RexSupport):
 
         self.scope: Optional[MessageBasedResource] = None
 
-        self.test_connection()
+        self.open_connection()
         self.set_config()
 
         self.measurements = {
@@ -83,11 +82,12 @@ class DPO7104_TekTronix_scope(RexSupport):
 
         self.validate_measurements()
 
-    def test_connection(self):
+    def open_connection(self):
             """Opens the resource manager and connects to the scope, saving it to self.scope."""
             try:
                 rm = pyvisa.ResourceManager(self.RESOURCE_MANAGER)
                 if self.SCOPE_ADDRESS not in rm.list_resources():
+                    self.logger.error(f"Scope address {self.SCOPE_ADDRESS} not found in available resources: {rm.list_resources()}")
                     raise Exception(f'{self.SCOPE_ADDRESS} not in {rm.list_resources()}')
                 else:
                     # 1. Bind the opened resource to self.scope
@@ -98,12 +98,13 @@ class DPO7104_TekTronix_scope(RexSupport):
                         TRUE_NAME = 'TEKTRONIX,DPO7104,B069280,CF:91.1CT FV:5.3.5 Build 22'  
                         idn = self.scope.query("*IDN?").strip()
                         if TRUE_NAME not in idn:  # Using 'in' is safer than '==' for *IDN?
+                            self.logger.error(f"Unexpected Scope ID: {idn} does not contain expected identifier {TRUE_NAME}")
                             raise Exception(f"Unexpected Scope ID: {idn} is not {TRUE_NAME}")
                     except Exception as e:
-                        print(f"Scope did not accept ID query: {e}")
+                        self.logger.error(f"Scope did not accept ID query: {e}")
 
             except Exception as e:
-                print(f"pyvisa.ResourceManager did not work: {e}")
+                self.logger.error(f"pyvisa.ResourceManager did not work: {e}")
 
     def set_config(self):
         self.averages = self.require_config("averages")
@@ -114,7 +115,7 @@ class DPO7104_TekTronix_scope(RexSupport):
         self.trigger_enabled = self.require_config("trigger")
 
         if not self.scope:
-            raise RuntimeError("Scope connection is not open. Call test_connection first.")
+            raise RuntimeError("Oscilloscope connection is not open. Check the cable connections.")
 
         #self.full_autoset()
 
