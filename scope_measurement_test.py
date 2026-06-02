@@ -10,7 +10,7 @@ def test_scope_experiment():
         # connect to a device, inherit its config & loop through its functions. ideally, all devices should have some "measure" like
         # function that handles sending the data over the socket.
         tektronix = DPO7104_TekTronix_scope(config, connect_to_rex=True)
-        tektronix.set_cursors()
+        #tektronix.set_cursors()
         for i in range(1):
             tektronix.measure()
             time.sleep(0.1)

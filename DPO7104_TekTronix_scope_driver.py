@@ -72,6 +72,7 @@ class DPO7104_TekTronix_scope(RexSupport):
 
         self.open_connection()
         self.set_config()
+        self.set_cursors()
 
         self.measurements = {
             "area": Measurement(data=[], unit="V*s"), 

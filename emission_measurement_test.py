@@ -17,7 +17,6 @@ def test_emission_experiment():
         spec = HoribaiHR550(config)
         tektronix = DPO7104_TekTronix_scope(config)
 
-        tektronix.set_cursors()
         spec.set_wavelength(spec.initial_wavelength)
         steps = int((spec.final_wavelength - spec.initial_wavelength) / spec.step_size)
         for i in range(steps):
