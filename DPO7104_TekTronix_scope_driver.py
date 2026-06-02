@@ -131,13 +131,13 @@ class DPO7104_TekTronix_scope(RexSupport):
             self.scope.write(f"ACQuire:MODe AVErage")
             self.scope.write(f"ACQuire:NUMAVg {self.averages}") 
 
-        v_position = 3.5 #3.5 for actaul PMT data
+        v_position = 3.5 
         self.scope.write(f'CH1:POSition {v_position}')
 
         self.scope.write("*CLS") #may need to move for each measurement loop if scope gets backed up with data
 
     def set_cursors(self): 
-        self.scope.write('CURSor:STATE ON') 
+        self.scope.write('CURSor:STATE ON') #this doesn't set cursors to be from channel 1
         self.scope.write('CURSor:FUNCtion VBARS')
         self.scope.write(f'CURSor:VBARS:POS1 {self.start_bound}')
         self.scope.write(f'CURSor:VBARS:POS2 {self.end_bound}')
@@ -151,7 +151,7 @@ class DPO7104_TekTronix_scope(RexSupport):
         self.scope.write('MEASUrement:IMMEd:STATE ON')
         area = float(self.scope.query('MEASUrement:IMMEd:VALue?'))
 
-        data = -1*area #PMT is negative voltage
+        data = -1.0 * area #PMT is negative voltage
 
         self.measurements["area"] = Measurement(
                 data=[data],

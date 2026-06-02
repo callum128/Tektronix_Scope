@@ -5,7 +5,7 @@ from DPO7104_TekTronix_scope_driver import DPO7104_TekTronix_scope
 
 from rex_utils import Session
 
-def test_scope_experiment():
+def scope_experiment_test():
     def scope_measurement(config) -> None:
         # connect to a device, inherit its config & loop through its functions. ideally, all devices should have some "measure" like
         # function that handles sending the data over the socket.
@@ -29,6 +29,6 @@ def test_scope_experiment():
 
 
 if __name__ == "__main__":
-    test_scope_experiment()
+    scope_experiment_test()
 
 #run: rex run .\scope_measurement_test.py -o .\Outputs\  

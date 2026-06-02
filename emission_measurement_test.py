@@ -2,7 +2,7 @@ import os
 import sys
 import time
 
-from rex_utils import Session #if Experiment doesn't work
+#from rex_utils import Session #if Experiment doesn't work
 
 from spcs_instruments import HoribaiHR550, Experiment #should work if the spcs_instruments path is added to rex config
 
@@ -12,7 +12,7 @@ from DPO7104_TekTronix_scope_driver import DPO7104_TekTronix_scope
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 
-def test_emission_experiment():
+def emission_experiment_test():
     def scope_spec_measurement(config) -> dict:
         spec = HoribaiHR550(config)
         tektronix = DPO7104_TekTronix_scope(config)
@@ -37,4 +37,6 @@ def test_emission_experiment():
 
 
 if __name__ == "__main__":
-    test_emission_experiment()
+    emission_experiment_test()
+
+#run: rex run .\emission_measurement_test.py -o .\Outputs\  
