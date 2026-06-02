@@ -1,0 +1,28 @@
+[experiment.info]
+name = "Callum Clausen"
+email = "callum.clausen@pg.canterbury.ac.nz"
+experiment_name = "Test_Emission_Experiment"
+experiment_description = "This is a test experiment"
+
+[device.DPO7104_TekTronix_scope]
+averages = 1
+start_bound = 1.0e-4
+end_bound = 9.0e-4
+area = true
+waveform = true
+trigger = false
+
+[device.iHR550]
+grating = "VIS"
+step_size = 0.1
+initial_wavelength = 500
+final_wavelength = 600
+bypass_homing=false
+[device.iHR550.slits]
+Entrance_Front = 0.5
+Entrance_Side = 0.0
+Exit_Front = 0.0
+Exit_Side = 0.5
+[device.iHR550.mirrors]
+Entrance = "front"
+Exit = "side"
