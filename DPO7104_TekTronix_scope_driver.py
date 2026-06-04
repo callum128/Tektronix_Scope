@@ -204,7 +204,7 @@ class DPO7104_TekTronix_scope(RexSupport):
             )
         
     def measure(self):
-        self.scope.write("*CLS") #clear the status to prevent overflow
+        self.scope.write("*CLS") #clear the status to prevent overflow, may mess with averaging if we have it on, may need to move this to the beginning of the loop if that's the case
 
         if self.area_enabled:
             self.measure_area()

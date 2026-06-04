@@ -1,4 +1,4 @@
-[experiment.info]
+[session.info]
 name = "Callum Clausen"
 email = "callum.clausen@pg.canterbury.ac.nz"
 experiment_name = "Test_Emission_Experiment"
@@ -9,14 +9,14 @@ averages = 1
 start_bound = 1.0e-4
 end_bound = 9.0e-4
 area = true
-waveform = true
+waveform = false
 trigger = false
 
 [device.iHR550]
 grating = "VIS"
 step_size = 0.1
 initial_wavelength = 500
-final_wavelength = 600
+final_wavelength = 500.5
 bypass_homing=false
 [device.iHR550.slits]
 Entrance_Front = 0.5

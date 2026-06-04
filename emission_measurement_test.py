@@ -2,7 +2,7 @@ import os
 import sys
 import time
 
-#from rex_utils import Session #if Experiment doesn't work
+from rex_utils import Session #if Experiment doesn't work
 
 from spcs_instruments import HoribaiHR550, Experiment #should work if the spcs_instruments path is added to rex config
 
@@ -32,7 +32,7 @@ def emission_experiment_test():
     config_path = os.path.join(dir_path, "emission_config.toml") #will need to adjust the path to the config file as needed
     config_path = os.path.abspath(config_path)
 
-    experiment = Experiment(scope_spec_measurement, config_path) #may need to be Session
+    experiment = Session(scope_spec_measurement, config_path) #may need to be Session
     experiment.start()
 
 
