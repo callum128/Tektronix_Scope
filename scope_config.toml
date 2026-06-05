@@ -1,13 +1,13 @@
 [session.info]
 name = "Callum Clausen"
 email = "ccl128@uclive.ac.nz"
-session_name = "Test_Scope_Driver"
+session_name = "1D2_3H5_from_3P0_test"
 session_description = "This is a test"
 
 [device.DPO7104_TekTronix_scope]
 averages = 1
-start_bound = 1.0e-4
-end_bound = 9.0e-4
+start_bound = 1.0e-6
+end_bound = 5.0e-3
 area = true
 waveform = true
 trigger = false

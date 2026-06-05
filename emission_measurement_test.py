@@ -23,7 +23,7 @@ def emission_experiment_test():
             val = tektronix.measure()
             spec.spectrometer_step()
             spec.measure()
-            time.sleep(0.1)
+            #time.sleep(0.1)
         tektronix.close()
 
         return

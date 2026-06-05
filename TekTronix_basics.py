@@ -38,6 +38,11 @@ try:
     x_incr = float(scope.query("WFMOutpre:XINcr?"))
     x_zero = float(scope.query("WFMOutpre:XZEro?"))
     trigger_position = float(scope.query("HORizontal:MAIn:SCAle?"))
+    print(f"Queried scaling parameters: Y_Mult={y_mult}, Y_Off={y_off}, Y_Zero={y_zero}, X_Incr={x_incr}, X_Zero={x_zero}, Trigger_Position={trigger_position}")
+    
+    time.sleep(0.5) #wait a bit to ensure the scope has time to process the queries and is ready for the next commands, adjust as needed based on the performance of your specific scope and computer
+    acq = int(scope.query("ACQUIRE:NUMACQ?"))
+    print(f"Initial acquisition count: {acq}")
 
     print("Stopping acquisition and reading waveform data...")
 
@@ -49,6 +54,7 @@ try:
     print(f"Read {adc_samples.size} ADC samples from scope")
     scope.write("ACQuire:STOPAfter RUNSTOP")
     scope.write("ACQuire:STATE RUN")
+
 
     print(f"Scaling parameters: Y_Mult={y_mult}, Y_Off={y_off}, Y_Zero={y_zero}, X_Incr={x_incr}, X_Zero={x_zero}, Trigger_Position={trigger_position}")
     print(f"First 100 ADC samples: {adc_samples[:100]}")

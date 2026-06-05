@@ -74,10 +74,13 @@ class DPO7104_TekTronix_scope(RexSupport):
         self.set_config()
         self.set_cursors()
 
+        #self.total_acq = int(self.scope.query("ACQUIRE:NUMACQ?"))
+        #print(f"Initial acquisition count: {self.total_acq}")
+
         self.measurements = {
-            "area": Measurement(data=[], unit="V*s"), 
-            "waveform": Measurement(data=[], unit="V"),
-            "trigger": Measurement(data=[], unit="V"),
+            "area": Measurement(data=[], unit="mV*s"), 
+            "waveform": Measurement(data=[], unit="mV"),
+            "trigger": Measurement(data=[], unit="mV"),
             "time_from_trigger": Measurement(data=[], unit="s")
         }
 
@@ -123,7 +126,7 @@ class DPO7104_TekTronix_scope(RexSupport):
         self.scope.write("TRIGger:A:TYPe EDGE")
         self.scope.write("TRIGger:A:EDGE:SOUrce CH2") 
         self.scope.write("TRIGger:A:EDGE:SLOPe FALL") 
-        self.scope.write("TRIGger:A SETLevel")
+        #self.scope.write("TRIGger:A SETLevel") #setting to 50% gets lost in the noise
 
         if self.averages == 1:
             self.scope.write(f"ACQuire:MODe SAMple")
@@ -131,8 +134,8 @@ class DPO7104_TekTronix_scope(RexSupport):
             self.scope.write(f"ACQuire:MODe AVErage")
             self.scope.write(f"ACQuire:NUMAVg {self.averages}") 
 
-        v_position = 3.5 
-        self.scope.write(f'CH1:POSition {v_position}')
+        #v_position = 3.8 
+        #self.scope.write(f'CH1:POSition {v_position}')
 
         self.scope.write("*CLS") #may need to move for each measurement loop if scope gets backed up with data
 
@@ -148,6 +151,40 @@ class DPO7104_TekTronix_scope(RexSupport):
         time.sleep(0.5)
 
     def measure_area(self):
+
+        # if self.averages > 1:
+        #     # for i in range(100*self.averages): #wait for the scope to finish its averaging, this is a bit hacky but Tektronix scopes don't have a great way to check if they're done processing the averages, and if you try to pull the area before it's done it will give you a nonsense value. The 100 is just a safety factor to make sure we wait long enough, may need to adjust based on the performance of your specific scope and computer.
+        #     #     acq = int(self.scope.query("ACQUIRE:NUMACQ?"))
+    
+        #     #     if acq > self.total_acq+self.averages: #if the number of acquisitions is greater than the number we had when we started plus the number of averages we want, then we know the scope has finished processing the averages and has moved on to the next acquisition, so we can break out of the loop and pull the area measurement
+        #     #         break
+                
+        #     #     self.total_acq += acq
+        #     #     time.sleep(0.1) #wait a bit before checking again to avoid spamming the scope with queries
+        #     time.sleep(0.5*self.averages) #just wait a fixed amount of time for the scope to finish processing the averages, adjust as needed based on the performance of your specific scope and computer
+        
+        if self.averages > 1:
+            # 1. Setup hardware to stop after exactly N averages
+            self.scope.write('ACQuire:STOPAfter SEQUENCE')
+            self.scope.write('ACQuire:STATE RUN') # Clears buffer and starts
+            
+            # 2. Calculate dynamic timeout
+            # Base buffer (e.g. 5s) + expected time per average (e.g. 0.2s)
+            # Adjust these constants based on your trigger rate!
+            timeout_at = time.time() + 5.0 + (self.averages * 0.2)
+            
+            # 3. Wait for completion with escape hatch
+            while True:
+                is_busy = int(self.scope.query("BUSY?"))
+                if not is_busy:
+                    break # Success!
+                    
+                if time.time() > timeout_at:
+                    # Handle failure (trigger lost or scope hung)
+                    self.scope.write('ACQuire:STATE STOP')
+                    raise TimeoutError(f"Scope timed out waiting for {self.averages} averages. Check trigger!")
+            
+
         self.scope.write('MEASUrement:IMMEd:STATE ON')
         area = float(self.scope.query('MEASUrement:IMMEd:VALue?'))
 
@@ -155,8 +192,9 @@ class DPO7104_TekTronix_scope(RexSupport):
 
         self.measurements["area"] = Measurement(
                 data=[data],
-                unit="V*s",
+                unit="mV*s",
             )
+        
         
     def measure_waveform(self, channel=1):
         """Pulls the waveform data, and data to make the time axis. Channel 2 for trigger."""
@@ -195,12 +233,12 @@ class DPO7104_TekTronix_scope(RexSupport):
         if channel == 1:
             self.measurements["waveform"] = Measurement(
                 data=[data],
-                unit="V",
+                unit="mV",
             )
         elif channel == 2:
             self.measurements["trigger"] = Measurement(
                 data=[data],
-                unit="V",
+                unit="mV",
             )
         
     def measure(self):
