@@ -1,56 +1,52 @@
 import time
 import numpy as np
 import pyvisa
-from pyvisa.resources import MessageBasedResource
-from typing import Optional, cast
 
 from rex_utils import Measurement, RexSupport
 
 
 class DPO7104_TekTronix_scope(RexSupport):
-    """Class for controlling a Tektronix DPO7104 oscilloscope via Keysight Technologies GPIB-USB using PyVISA.
-    
-    This driver handles device connection, baseline configuration, gated area measurements, waveform acquisition, 
-    and optional data forwarding to a Rex server link.
+    """Driver for the Tektronix DPO7104 oscilloscope over GPIB using PyVISA.
+
+    This class manages instrument connection, configuration, gated area integration, waveform
+    capture, and optional forwarding of measurement payloads to a Rex server.
+
+    The driver supports averaged acquisitions, cursor-based gated area measurements on CH1,
+    raw waveform downloads for CH1 and CH2, and basic trigger setup on CH2.
 
     Attributes:
-        state (int): A counter that increments with every successful measurement cycle.
-        connect_to_rex (bool): Flag indicating whether to forward data payloads to a Rex server link.
-        sock (socket or None): The TCP socket connection used when connect_to_rex is enabled.
-        scope (MessageBasedResource or None): The PyVISA message-based resource pointer for the physical scope.
-        measurements (dict): Container for compiled measurement results. Holds 'area', 'waveform', 
-            'trigger', and 'time_from_trigger' as Measurement objects.
-        averages (int): The number of hardware waveform acquisitions to average over.
-        start_bound (float): The left position boundary for the gated measurement relative to the trigger.
-        end_bound (float): The right position boundary for the gated measurement relative to the trigger.
-        area_enabled (bool): Boolean flag stating whether area integrations should be captured.
-        waveform_enabled (bool): Boolean flag stating whether Channel 1 waveforms should be pulled.
-        trigger_enabled (bool): Boolean flag stating whether Channel 2 trigger waveforms should be pulled.
-        v_peak (float): The absolute peak negative voltage captured during clipping checks.
+        state (int): Measurement cycle counter.
+        connect_to_rex (bool): Whether to forward payloads to a Rex server link.
+        sock (socket | None): TCP socket used for Rex forwarding.
+        scope: PyVISA resource for the connected oscilloscope.
+        measurements (dict): Stored Measurement objects for area, waveform, trigger, and timing.
+        averages (int): Number of waveform acquisitions to average.
+        start_bound (float): Left cursor position relative to the trigger.
+        end_bound (float): Right cursor position relative to the trigger.
+        area_enabled (bool): Whether gated area measurements are enabled.
+        waveform_enabled (bool): Whether CH1 waveform capture is enabled.
+        trigger_enabled (bool): Whether CH2 trigger waveform capture is enabled.
 
     Methods:
-        open_connection(): Establishes the PyVISA connection and validates the instrument identity string.
-        set_config(): Imports active configuration values, executes a full autoset, and binds 
-            acquisition and trigger criteria (Edge, Fall, Channel 2 Source).
-        set_cursors(): Enables and positions vertical bars on the scope for gated Channel 1 area calculations.
-        measure_area(): Queries the scope's gated area calculation and transforms it to account for negative PMT polarity.
-        measure_waveform(channel=1): Downloads raw binary ADC curves from the specified channel, scales them 
-            into true voltages using preamble multipliers, and builds a time-axis relative to the trigger.
-        measure(): Orchestrates the enabled acquisition routines (area and/or waveforms) and pushes payloads to Rex.
-        full_autoset(): Commands the scope hardware to execute its slow native autoset sequence (*OPC? blocking).
-        check_clipping(): Measures the absolute peak minimum voltage on Channel 1 and caches it to self.v_peak.
-        close(): Safely closes the PyVISA session to free up the GPIB resource interface.
+        open_connection(): Open the instrument connection and verify identity.
+        set_config(): Apply configuration and prepare acquisition settings.
+        set_cursors(): Configure vertical cursor positions and gated area measurement.
+        measure_area(): Acquire gated area and convert polarity for PMT output.
+        measure_waveform(channel=1): Download and scale waveform data from the given channel.
+        measure(): Run enabled measurements and optionally send the payload to Rex.
+        full_autoset(): Execute the instrument autoset sequence.
+        close(): Close the PyVISA resource safely.
     """
 
     #pyvisa settings
-    RESOURCE_MANAGER = '' #default to pyvisa's default backend, but can be set to "@ivi" or other backends if needed for compatibility with specific GPIB-USB adapters or drivers. Check pyvisa documentation for details on available backends and their compatibility with your hardware setup.
+    RESOURCE_MANAGER = '' #default to pyvisa's default backend, but can be set to "@ivi" or other backends if needed for compatibility with specific GPIB-USB adapters or drivers. 
     SCOPE_ADDRESS = "GPIB0::1::INSTR"
 
     __toml_config__ = {
         "device.DPO7104_TekTronix_scope": {
             "_section_description": "DPO7104_TekTronix_scope configuration",
-            "averages": {"_value": 1, "_description": "Number of averages"}, #set to 1 for non-averaged data, set to >1 for averaged data, but be aware this will slow down your acquisition loop significantly as the scope needs to acquire and process multiple waveforms for each measurement cycle
-            "start_bound": {"_value": 0.0, "_description": "Starting bound, the position of the first cursor relative to the trigger"},
+            "averages": {"_value": 10, "_description": "Number of averages"}, #set to 1 for non-averaged data, set to >1 for averaged data, but be aware this will slow down your acquisition loop as the scope needs to acquire and process multiple waveforms for each measurement cycle
+            "start_bound": {"_value": 1.0e-7, "_description": "Starting bound, the position of the first cursor relative to the trigger"},
             "end_bound": {"_value": 1.0e-4, "_description": "Ending bound, the position of the second cursor relative to the trigger"},
             "area": {"_value": True, "_description": "Pulls area data"},
             "waveform": {"_value": False, "_description": "Pulls wavefrom data, channel 1"},
@@ -68,14 +64,11 @@ class DPO7104_TekTronix_scope(RexSupport):
         if self.connect_to_rex:
             self.sock = self.tcp_connect()
 
-        self.scope: Optional[MessageBasedResource] = None
+        self.scope = None
 
         self.open_connection()
         self.set_config()
         self.set_cursors()
-
-        #self.total_acq = int(self.scope.query("ACQUIRE:NUMACQ?"))
-        #print(f"Initial acquisition count: {self.total_acq}")
 
         self.measurements = {
             "area": Measurement(data=[], unit="mV*s"), 
@@ -94,14 +87,13 @@ class DPO7104_TekTronix_scope(RexSupport):
                     self.logger.error(f"Scope address {self.SCOPE_ADDRESS} not found in available resources: {rm.list_resources()}")
                     raise Exception(f'{self.SCOPE_ADDRESS} not in {rm.list_resources()}')
                 else:
-                    # 1. Bind the opened resource to self.scope
-                    self.scope = cast(MessageBasedResource, rm.open_resource(self.SCOPE_ADDRESS))
+                    self.scope = rm.open_resource(self.SCOPE_ADDRESS)
                     self.scope.timeout = 25000 
                     
                     try:
                         TRUE_NAME = 'TEKTRONIX,DPO7104,B069280,CF:91.1CT FV:5.3.5 Build 22'  
                         idn = self.scope.query("*IDN?").strip()
-                        if TRUE_NAME not in idn:  # Using 'in' is safer than '==' for *IDN?
+                        if TRUE_NAME not in idn: 
                             self.logger.error(f"Unexpected Scope ID: {idn} does not contain expected identifier {TRUE_NAME}")
                             raise Exception(f"Unexpected Scope ID: {idn} is not {TRUE_NAME}")
                     except Exception as e:
@@ -135,12 +127,12 @@ class DPO7104_TekTronix_scope(RexSupport):
             self.scope.write(f"ACQuire:NUMAVg {self.averages}") 
 
         #v_position = 3.8 
-        #self.scope.write(f'CH1:POSition {v_position}')
+        #self.scope.write(f'CH1:POSition {v_position}') #turn off to allow manual adjustment
 
-        self.scope.write("*CLS") #may need to move for each measurement loop if scope gets backed up with data
+        self.scope.write("*CLS")
 
     def set_cursors(self): 
-        self.scope.write('CURSor:STATE ON') #this doesn't set cursors to be from channel 1
+        self.scope.write('CURSor:STATE ON') #this doesn't always set cursors to be from channel 1, check the scope
         self.scope.write('CURSor:FUNCtion VBARS')
         self.scope.write(f'CURSor:VBARS:POS1 {self.start_bound}')
         self.scope.write(f'CURSor:VBARS:POS2 {self.end_bound}')
@@ -151,40 +143,22 @@ class DPO7104_TekTronix_scope(RexSupport):
         time.sleep(0.5)
 
     def measure_area(self):
-
-        # if self.averages > 1:
-        #     # for i in range(100*self.averages): #wait for the scope to finish its averaging, this is a bit hacky but Tektronix scopes don't have a great way to check if they're done processing the averages, and if you try to pull the area before it's done it will give you a nonsense value. The 100 is just a safety factor to make sure we wait long enough, may need to adjust based on the performance of your specific scope and computer.
-        #     #     acq = int(self.scope.query("ACQUIRE:NUMACQ?"))
-    
-        #     #     if acq > self.total_acq+self.averages: #if the number of acquisitions is greater than the number we had when we started plus the number of averages we want, then we know the scope has finished processing the averages and has moved on to the next acquisition, so we can break out of the loop and pull the area measurement
-        #     #         break
-                
-        #     #     self.total_acq += acq
-        #     #     time.sleep(0.1) #wait a bit before checking again to avoid spamming the scope with queries
-        #     time.sleep(0.5*self.averages) #just wait a fixed amount of time for the scope to finish processing the averages, adjust as needed based on the performance of your specific scope and computer
-        
         if self.averages > 1:
-            # 1. Setup hardware to stop after exactly N averages
             self.scope.write('ACQuire:STOPAfter SEQUENCE')
-            self.scope.write('ACQuire:STATE RUN') # Clears buffer and starts
+            self.scope.write('ACQuire:STATE RUN')
             
-            # 2. Calculate dynamic timeout
             # Base buffer (e.g. 5s) + expected time per average (e.g. 0.2s)
-            # Adjust these constants based on your trigger rate!
             timeout_at = time.time() + 5.0 + (self.averages * 0.2)
             
-            # 3. Wait for completion with escape hatch
             while True:
                 is_busy = int(self.scope.query("BUSY?"))
                 if not is_busy:
-                    break # Success!
+                    break # Success, acquisition is completed
                     
                 if time.time() > timeout_at:
-                    # Handle failure (trigger lost or scope hung)
                     self.scope.write('ACQuire:STATE STOP')
                     raise TimeoutError(f"Scope timed out waiting for {self.averages} averages. Check trigger!")
-            
-
+        
         self.scope.write('MEASUrement:IMMEd:STATE ON')
         area = float(self.scope.query('MEASUrement:IMMEd:VALue?'))
 
@@ -194,15 +168,14 @@ class DPO7104_TekTronix_scope(RexSupport):
                 data=[data],
                 unit="mV*s",
             )
-        
-        
+    
     def measure_waveform(self, channel=1):
-        """Pulls the waveform data, and data to make the time axis. Channel 2 for trigger."""
+        """Slowly pulls the waveform data, and data to make the time axis. Channel 2 for trigger."""
         self.scope.write(f"DATa:SOUrce CH{channel}")
         self.scope.write("DATa:ENCdg RIBINARY")
         self.scope.write("DATa:WIDth 2") 
         self.scope.write("DATa:STARt 1")
-        self.scope.write("DATa:STOP 100000") #will take ~2s
+        self.scope.write("DATa:STOP 100000") #will take ~4s, there is probably a faster method
 
         # Query scaling parameters from the preamble
         y_mult = float(self.scope.query("WFMOutpre:YMUlt?"))
@@ -212,12 +185,14 @@ class DPO7104_TekTronix_scope(RexSupport):
         x_zero = float(self.scope.query("WFMOutpre:XZEro?"))
         trigger_pos = float(self.scope.query("HORizontal:MAIn:SCAle?"))
 
-        self.scope.write("ACQuire:STOPAfter SEQuence") #stop the acquisition to prevent overwriting the buffer while we're reading it, will need to start it again after
+        self.logger.debug(f"Waveform scaling parameters: y_mult={y_mult}, y_off={y_off}, y_zero={y_zero}, x_incr={x_incr}, x_zero={x_zero}, trigger_pos={trigger_pos}")
+
+        self.scope.write("ACQuire:STOPAfter SEQuence")
 
         adc_samples = np.array(self.scope.query_binary_values("CURVe?", datatype='h', is_big_endian=True))
 
         self.scope.write("ACQuire:STOPAfter RUNSTOP")
-        self.scope.write("ACQuire:STATE RUN") #restart the acquisition for the next loop, may need to move this if we find scope gets backed up with data
+        self.scope.write("ACQuire:STATE RUN")
 
         voltages = (adc_samples - y_off) * y_mult + y_zero
         time_axis = np.arange(adc_samples.size) * x_incr + x_zero - trigger_pos #relative to trigger
@@ -242,7 +217,7 @@ class DPO7104_TekTronix_scope(RexSupport):
             )
         
     def measure(self):
-        self.scope.write("*CLS") #clear the status to prevent overflow, may mess with averaging if we have it on, may need to move this to the beginning of the loop if that's the case
+        self.scope.write("*CLS")
 
         if self.area_enabled:
             self.measure_area()
@@ -262,12 +237,6 @@ class DPO7104_TekTronix_scope(RexSupport):
     def full_autoset(self):
         self.scope.query("*OPC?")
         self.scope.write("AUToset EXECute")
-
-    def check_clipping(self):
-        self.scope.write(f'MEASUrement:IMMed:TYPE MINimum')
-        self.scope.write(f'MEASUrement:IMMed:SOUrce CH1')
-        
-        self.v_peak = abs(float(self.scope.query('MEASUrement:IMMed:VALue?')))
         
     def close(self):
         if self.scope:
