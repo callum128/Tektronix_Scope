@@ -29,17 +29,21 @@ try:
     scope.write("DATa:ENCdg RIBINARY")
     scope.write("DATa:WIDth 2") #1 byte, 2 byte, 4 byte, 8 byte data width. 2 byte is typical for Tektronix scopes, but check your scope's documentation to be sure. Using the wrong width can lead to incorrect data scaling and interpretation.
     scope.write("DATa:STARt 1")
-    scope.write("DATa:STOP 100000") 
+    scope.write("DATa:STOP 100000") #try 2500 as the command for all
+    #try WAVFrm? for waveform preamble
 
     # Query scaling parameters from the preamble
     y_mult = float(scope.query("WFMOutpre:YMUlt?"))
-    y_off  = float(scope.query("WFMOutpre:YOFf?"))
+    y_off  = float(scope.query("WFMOutpre:YOFf?")) #24400 is probably an error code!
     y_zero = float(scope.query("WFMOutpre:YZEro?"))
     x_incr = float(scope.query("WFMOutpre:XINcr?"))
     x_zero = float(scope.query("WFMOutpre:XZEro?"))
     trigger_position = float(scope.query("HORizontal:MAIn:SCAle?"))
-    print(f"Queried scaling parameters: Y_Mult={y_mult}, Y_Off={y_off}, Y_Zero={y_zero}, X_Incr={x_incr}, X_Zero={x_zero}, Trigger_Position={trigger_position}")
+    #print(f"Queried scaling parameters: Y_Mult={y_mult}, Y_Off={y_off}, Y_Zero={y_zero}, X_Incr={x_incr}, X_Zero={x_zero}, Trigger_Position={trigger_position}")
     
+    record_length = int(scope.query("HORizontal:RECOrdlength?"))
+    print(f"Record length: {record_length} points")
+
     time.sleep(0.5) #wait a bit to ensure the scope has time to process the queries and is ready for the next commands, adjust as needed based on the performance of your specific scope and computer
     acq = int(scope.query("ACQUIRE:NUMACQ?"))
     print(f"Initial acquisition count: {acq}")
@@ -70,7 +74,7 @@ try:
     ax.plot(time_axis, voltages, '.', label=f"Channel {channel}")  
     plt.title("Oscilloscope Waveform")
     plt.xlabel("Time (s)")
-    plt.ylabel("Voltage (V)")
+    plt.ylabel("Voltage (mV)")
     plt.legend()
     plt.show()
 

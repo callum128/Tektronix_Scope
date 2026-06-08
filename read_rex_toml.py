@@ -29,6 +29,9 @@ def trigger_dependent_custom_integration(time_axis, voltages, start_time, end_ti
         integrated_value = integrate.trapezoid(
             voltages[start_index:end_index], time_axis[start_index:end_index] #doesn't match the scope's gated area measurement if negative offset
         ) #trapezoid is worse, but more inline with what the scope area calculates
+    
+    dumb_sum = -np.sum(voltages[start_index:end_index])*(time_axis[1] - time_axis[0]) #this is a dumb sum, but it should be close to the integrated value if the time axis is evenly spaced and the waveform doesn't change too much between points. It's not as accurate as trapezoidal integration, but it can be a useful sanity check or a faster approximation in some cases.
+    print(f"Dumb integration value: {dumb_sum:.4e}")
 
     summed_value = np.sum(voltages[start_index:end_index])
 
@@ -54,7 +57,7 @@ real_sample_zeropos = 'Outputs/1D2_3H5_from_3P0_test_05_06_2026_14_15_09_072.tom
 real_sample_tinypos = 'Outputs/1D2_3H5_from_3P0_test_05_06_2026_14_17_03_410.toml' #1e-9 is too small
 real_sample_tinypos2 = 'Outputs/1D2_3H5_from_3P0_test_05_06_2026_14_19_28_543.toml' #1e-7 is not too small
 
-data_path = Path(__file__).parent / real_sample_tinypos2
+data_path = Path(__file__).parent / real_sample_tinypos
 
 # Read in the rex toml data format, reads in only the .data layer, ignoring configurations etc.This handles importing nested data
 
@@ -76,9 +79,15 @@ times = np.array(data['DPO7104_TekTronix_scope_time_from_trigger'][sample_number
 area = np.array(data['DPO7104_TekTronix_scope_area'][sample_number])
 print(f'Area from the scope: {area:.4e}')
 
+print(f'First 10 time points from the scope: {times[:10]}')
+
 
 fig, ax = plt.subplots()
-start, stop = -1.0e-5, 5.0e-3 #match the toml
+start = 1e-9 #shifting the trigger to 0 doesn;t change the area, duh
+stop = 5.0e-3 #match the toml
+
+#shifted_times = times - times[0] #shift so the first point is at 0 seconds, adjust as needed based on expected delay of PMT pulse after trigger
+#shifting the trigger to 0 doesn;t change the area, duh
 
 computed_area, summed_area = trigger_dependent_custom_integration(times, waveforms, start, stop)
 computed_area = -computed_area #negate to match the scope's convention of negative area for downward pulses, adjust as needed based on your specific waveform and expected pulse polarity
@@ -90,7 +99,7 @@ print(f'Difference compared to scope area: {computed_area / area:.2f} times the 
 # print(f"Box - Computed: {box_area - computed_area:.4e}")
 
 
-ax.plot(times, waveforms, '.', label=f"Sample {sample_number}\n Area {area:.4e}")  
+ax.plot(times, waveforms, 'b', label=f"Sample {sample_number}\nScope Area {area:.4e}")  
 plt.vlines(start, ymin=min(waveforms), ymax=max(waveforms), colors='r', linestyles='--', label="Start")
 plt.vlines(stop, ymin=min(waveforms), ymax=max(waveforms), colors='m', linestyles='--', label="Stop")
 plt.title("Oscilloscope Waveform")
@@ -101,18 +110,18 @@ plt.show()
 
 
 
-data_path2 = Path(__file__).parent / real_sample1
-data = load_rex_data(data_path2, "polars")
-samples = range(3)
-fig, ax = plt.subplots(len(samples), sharey=True, figsize=(10, 6))
-#ax[0].set_ylim(-0.12, 0.09) #adjust as needed based on expected PMT pulse amplitude
-#ax[0].set_title("Mercury Lamp Signal as the Spectrometer moves over a peak at 543.3 nm")
-for i, sample in enumerate(samples):
-    waveforms = np.array(data['DPO7104_TekTronix_scope_waveform'][i])
-    times = np.array(data['DPO7104_TekTronix_scope_time_from_trigger'][i])
-    area = np.array(data['DPO7104_TekTronix_scope_area'][i])
-    ax[i].plot(times, waveforms, 'k.', label=f"Sample {sample}\n Area {area:.4e}")  
-    ax[i].set_xlabel("Time from Trigger (s)")
-    ax[i].set_ylabel("Voltage (mV)")
-    ax[i].legend(loc='lower right')
-plt.show()
+# data_path2 = Path(__file__).parent / real_sample1
+# data = load_rex_data(data_path2, "polars")
+# samples = range(3)
+# fig, ax = plt.subplots(len(samples), sharey=True, figsize=(10, 6))
+# #ax[0].set_ylim(-0.12, 0.09) #adjust as needed based on expected PMT pulse amplitude
+# #ax[0].set_title("Mercury Lamp Signal as the Spectrometer moves over a peak at 543.3 nm")
+# for i, sample in enumerate(samples):
+#     waveforms = np.array(data['DPO7104_TekTronix_scope_waveform'][i])
+#     times = np.array(data['DPO7104_TekTronix_scope_time_from_trigger'][i])
+#     area = np.array(data['DPO7104_TekTronix_scope_area'][i])
+#     ax[i].plot(times, waveforms, 'k.', label=f"Sample {sample}\n Area {area:.4e}")  
+#     ax[i].set_xlabel("Time from Trigger (s)")
+#     ax[i].set_ylabel("Voltage (mV)")
+#     ax[i].legend(loc='lower right')
+# plt.show()

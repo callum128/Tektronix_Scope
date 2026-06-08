@@ -24,7 +24,7 @@ wavenumbers = 1e7 / spec_wavelengths
 
 fig, ax = plt.subplots()
 
-shifted_wavenumbers = -(wavenumbers - 16504-24.65) #shift so the first point is at 0 cm^-1, adjust as needed based on expected peak positions
+shifted_wavenumbers = -(wavenumbers - 16504-24.65) #shift so the first point is at 0 cm^-1 for 3H4, adjust as needed based on expected peak positions
 
 ax.plot(shifted_wavenumbers, areas)
 

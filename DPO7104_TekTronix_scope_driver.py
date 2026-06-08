@@ -147,8 +147,8 @@ class DPO7104_TekTronix_scope(RexSupport):
             self.scope.write('ACQuire:STOPAfter SEQUENCE')
             self.scope.write('ACQuire:STATE RUN')
             
-            # Base buffer (e.g. 5s) + expected time per average (e.g. 0.2s)
-            timeout_at = time.time() + 5.0 + (self.averages * 0.2)
+            # Base buffer (e.g. 5s) + expected time per average (e.g. 0.5s)
+            timeout_at = time.time() + 5.0 + (self.averages * 0.5)
             
             while True:
                 is_busy = int(self.scope.query("BUSY?"))
