@@ -2,11 +2,10 @@ import os
 import sys
 import time
 
-from rex_utils import Session #if Experiment doesn't work
+from rex_utils import Session
 
-from spcs_instruments import HoribaiHR550, Experiment #should work if the spcs_instruments path is added to rex config
+from spcs_instruments import HoribaiHR550
 
-#sys.path.append(os.path.expanduser("/Users/callu/OneDrive/Documents/GitHub/TekTronix_scope"))
 from DPO7104_TekTronix_scope_driver import DPO7104_TekTronix_scope
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -23,7 +22,7 @@ def emission_experiment_test():
             val = tektronix.measure()
             spec.spectrometer_step()
             spec.measure()
-            #time.sleep(0.1)
+            
         tektronix.close()
 
         return
@@ -32,7 +31,7 @@ def emission_experiment_test():
     config_path = os.path.join(dir_path, "emission_config.toml") #will need to adjust the path to the config file as needed
     config_path = os.path.abspath(config_path)
 
-    experiment = Session(scope_spec_measurement, config_path) #may need to be Session
+    experiment = Session(scope_spec_measurement, config_path)
     experiment.start()
 
 
