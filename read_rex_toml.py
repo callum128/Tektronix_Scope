@@ -81,8 +81,22 @@ print(f'Area from the scope: {area:.4e}')
 
 print(f'First 10 time points from the scope: {times[:10]}')
 
+# y0 = 0.0
+# ymult = 9.375e-5
+# yoff = 24400.0
+
+# adc = (waveforms - y0)/ymult +yoff
+
+# yoff = 0.0 #NOPE, it really was 24400, this give a really wrong area
+
+# voltages = (adc - yoff) * ymult + y0
+
+# #waveforms = voltages
 
 fig, ax = plt.subplots()
+
+#ax.plot(times, voltages, 'r', label=f"Sample {sample_number}\nScope Area {area:.4e}")
+
 start = 1e-9 #shifting the trigger to 0 doesn;t change the area, duh
 stop = 5.0e-3 #match the toml
 
@@ -99,7 +113,7 @@ print(f'Difference compared to scope area: {computed_area / area:.2f} times the 
 # print(f"Box - Computed: {box_area - computed_area:.4e}")
 
 
-ax.plot(times, waveforms, 'b', label=f"Sample {sample_number}\nScope Area {area:.4e}")  
+ax.plot(times, waveforms, 'b--', label=f"Sample {sample_number}\nScope Area {area:.4e}")  
 plt.vlines(start, ymin=min(waveforms), ymax=max(waveforms), colors='r', linestyles='--', label="Start")
 plt.vlines(stop, ymin=min(waveforms), ymax=max(waveforms), colors='m', linestyles='--', label="Stop")
 plt.title("Oscilloscope Waveform")

@@ -34,7 +34,7 @@ try:
 
     # Query scaling parameters from the preamble
     y_mult = float(scope.query("WFMOutpre:YMUlt?"))
-    y_off  = float(scope.query("WFMOutpre:YOFf?")) #24400 is probably an error code!
+    y_off  = float(scope.query("WFMOutpre:YOFf?")) #24400 is real
     y_zero = float(scope.query("WFMOutpre:YZEro?"))
     x_incr = float(scope.query("WFMOutpre:XINcr?"))
     x_zero = float(scope.query("WFMOutpre:XZEro?"))

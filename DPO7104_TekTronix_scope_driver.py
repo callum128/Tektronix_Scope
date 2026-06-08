@@ -115,6 +115,9 @@ class DPO7104_TekTronix_scope(RexSupport):
 
         #self.full_autoset()
 
+        #remember to manually set the vertical scale for the max peak to fill the screen
+        #then all peaks will not go offscreen and be relative which is essential
+
         self.scope.write("TRIGger:A:TYPe EDGE")
         self.scope.write("TRIGger:A:EDGE:SOUrce CH2") 
         self.scope.write("TRIGger:A:EDGE:SLOPe FALL") 
