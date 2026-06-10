@@ -12,7 +12,7 @@ class DPO7104_TekTronix_scope(RexSupport):
     capture, and optional forwarding of measurement payloads to a Rex server.
 
     The driver supports averaged acquisitions, cursor-based gated area measurements on CH1,
-    raw waveform downloads for CH1 and CH2, and basic trigger setup on CH2.
+    raw waveform downloads for CH1 and CH2, and basic trigger setup on CH2. Time axis must be reconstructed. 
 
     KNOWN FOOTGUNS:
     - Waveform downloads can be slow and massive, may cause the scope's CPU to struggle, or even overfill the computer storage.
@@ -162,6 +162,8 @@ class DPO7104_TekTronix_scope(RexSupport):
         time.sleep(0.5)
 
     def measure_area(self):
+        """Waits till the scope has enough acquisitionS, from now, to make an average, then pulls the area and
+        multiplies by -1"""
         if self.averages > 1:
             self.scope.write('ACQuire:STOPAfter SEQUENCE')
             self.scope.write('ACQuire:STATE RUN')
@@ -189,15 +191,30 @@ class DPO7104_TekTronix_scope(RexSupport):
             )
     
     def measure_waveform(self, channel=1):
-        """Slowly pulls the waveform data, and data to make the time axis. Channel 2 for trigger for debugging.
-        This will also create a massive amount of data and the scope's cpu can struggle to keep up, 
+        """Slowly pulls the waveform data, and data to reconstruct the time axis. Channel 2 for trigger for debugging.
+        This will save a massive amount of data and the scope's cpu can struggle to keep up, 
         so use with caution and consider using only area measurements for long acquisition loops."""
+
+        if self.averages > 1 and not self.area_enabled: #wait till fully averaged
+            self.scope.write('ACQuire:STOPAfter SEQUENCE')
+            self.scope.write('ACQuire:STATE RUN')
+             # Base buffer (e.g. 5s) + expected time per average (e.g. 0.5s)
+            timeout_at = time.time() + 5.0 + (self.averages * 0.5)
+            
+            while True:
+                is_busy = int(self.scope.query("BUSY?"))
+                if not is_busy:
+                    break # Success, acquisition is completed
+                    
+                if time.time() > timeout_at:
+                    self.scope.write('ACQuire:STATE STOP')
+                    raise TimeoutError(f"Scope timed out waiting for {self.averages} averages. Check trigger!")
 
         self.scope.write(f"DATa:SOUrce CH{channel}")
         self.scope.write("DATa:ENCdg RIBINARY")
         self.scope.write("DATa:WIDth 2") 
         self.scope.write("DATa:STARt 1")
-        self.scope.write("DATa:STOP 100000") #will take ~4s, there is probably a faster method
+        self.scope.write("DATa:STOP 100000") #save all 100000 data points, will take ~4s, there is probably a better method
 
         # Query scaling parameters from the preamble
         y_mult = float(self.scope.query("WFMOutpre:YMUlt?"))
@@ -209,7 +226,7 @@ class DPO7104_TekTronix_scope(RexSupport):
 
         self.logger.debug(f"Waveform scaling parameters: y_mult={y_mult}, y_off={y_off}, y_zero={y_zero}, x_incr={x_incr}, x_zero={x_zero}, trigger_pos={trigger_pos}")
 
-        self.scope.write("ACQuire:STOPAfter SEQuence")
+        self.scope.write("ACQuire:STOPAfter SEQuence") #stops the scope to pull, may need to put inside step_data_puller
 
         adc_samples = np.array(self.scope.query_binary_values("CURVe?", datatype='h', is_big_endian=True))
 
@@ -217,14 +234,16 @@ class DPO7104_TekTronix_scope(RexSupport):
         self.scope.write("ACQuire:STATE RUN")
 
         voltages = (adc_samples - y_off) * y_mult + y_zero
-        time_axis = np.arange(adc_samples.size) * x_incr + x_zero - trigger_pos #relative to trigger
+        #time_axis = np.arange(adc_samples.size) * x_incr + x_zero - trigger_pos #relative to trigger
 
         data = voltages.tolist()
-        times = time_axis.tolist()
+        #times = time_axis.tolist()
+
+        time_data = [f'np.arange({adc_samples.size}) * {x_incr} + {x_zero} - {trigger_pos}', adc_samples.size, x_incr, x_zero, trigger_pos] #just send the parameters to reconstruct the time axis on the other end, to save bandwidth and avoid sending massive time arrays
 
         self.measurements["time_from_trigger"] = Measurement(
-                data=[times],
-                unit="s",
+                data=[time_data],
+                unit="s", #need to reconstruct, but will then be in s
             )
 
         if channel == 1:

@@ -20,18 +20,21 @@ def step_data_puller(scope, channel=1):
     scope.write(f"DATa:SOUrce CH{channel}")
     scope.write("DATa:ENCdg RIBINARY")
     scope.write("DATa:WIDth 2") #1 byte, 2 byte, 4 byte, 8 byte data width. 2 byte is typical for Tektronix scopes, but check your scope's documentation to be sure. Using the wrong width can lead to incorrect data scaling and interpretation.
-    scope.write("DATa:STARt 1")
-    total_points = int(scope.query("HORizontal:RECOrdlength?")) 
+
+    total_points = int(scope.query("HORizontal:RECOrdlength?"))  #should be 100000 for real data
     print(f"Record length: {total_points} points")
-    smaller_size = 5000
-    step_size = int(total_points / smaller_size) #adjust as needed based on the performance of your specific scope and computer, and the total number of points. This is the number of points to pull in each step.
-    adc_samples = [] 
+    smaller_size = 5000 #adjust as needed
+    step_size = int(total_points / smaller_size) 
+    
+    adc_samples = np.zeros(smaller_size) #preallocate a numpy array for the ADC samples, adjust dtype as needed based on the data width set above
+
     for start in range(1, total_points+1, step_size):
-        stop = min(start + step_size - 1, total_points)
+        stop = min(start + 1, total_points) #pulls 1 point every step
         scope.write(f"DATa:STARt {start}")
         scope.write(f"DATa:STOP {stop}")
-        adc_samples.extend(scope.query_binary_values("CURVe?", datatype='h', is_big_endian=True)) #need to make a faster, safer np array thing
+        adc_samples[start//step_size] = float(scope.query_binary_values("CURVe?", datatype='h', is_big_endian=True)) #may need [0]
         #time.sleep(0.1)
+
     return np.array(adc_samples)
 
 
