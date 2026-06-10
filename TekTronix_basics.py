@@ -14,6 +14,26 @@ channel = 1
 print(rm.list_resources())
 print("Connecting to oscilloscope...")
 
+def step_data_puller(scope, channel=1):
+    """Pulls a few points of the waveform data, then step further and pulls again, to try to avoid overwhelming the scope's 
+    CPU and causing it to crash. This is a bit of a hack, but it will probably work."""
+    scope.write(f"DATa:SOUrce CH{channel}")
+    scope.write("DATa:ENCdg RIBINARY")
+    scope.write("DATa:WIDth 2") #1 byte, 2 byte, 4 byte, 8 byte data width. 2 byte is typical for Tektronix scopes, but check your scope's documentation to be sure. Using the wrong width can lead to incorrect data scaling and interpretation.
+    scope.write("DATa:STARt 1")
+    total_points = int(scope.query("HORizontal:RECOrdlength?")) 
+    print(f"Record length: {total_points} points")
+    smaller_size = 5000
+    step_size = int(total_points / smaller_size) #adjust as needed based on the performance of your specific scope and computer, and the total number of points. This is the number of points to pull in each step.
+    adc_samples = [] 
+    for start in range(1, total_points+1, step_size):
+        stop = min(start + step_size - 1, total_points)
+        scope.write(f"DATa:STARt {start}")
+        scope.write(f"DATa:STOP {stop}")
+        adc_samples.extend(scope.query_binary_values("CURVe?", datatype='h', is_big_endian=True)) #need to make a faster, safer np array thing
+        #time.sleep(0.1)
+    return np.array(adc_samples)
+
 
 try:
     scope = rm.open_resource(SCOPE_ADDRESS)
@@ -25,12 +45,13 @@ try:
 
     scope.write(f"ACQuire:MODe SAMple") #set to sample
 
-    scope.write(f"DATa:SOUrce CH{channel}")
-    scope.write("DATa:ENCdg RIBINARY")
-    scope.write("DATa:WIDth 2") #1 byte, 2 byte, 4 byte, 8 byte data width. 2 byte is typical for Tektronix scopes, but check your scope's documentation to be sure. Using the wrong width can lead to incorrect data scaling and interpretation.
-    scope.write("DATa:STARt 1")
-    scope.write("DATa:STOP 100000") #try 2500 as the command for all
-    #try WAVFrm? for waveform preamble
+    # scope.write(f"DATa:SOUrce CH{channel}")
+    # scope.write("DATa:ENCdg RIBINARY")
+    # scope.write("DATa:WIDth 2") #1 byte, 2 byte, 4 byte, 8 byte data width. 2 byte is typical for Tektronix scopes, but check your scope's documentation to be sure. Using the wrong width can lead to incorrect data scaling and interpretation.
+    # scope.write("DATa:STARt 1")
+    # scope.write("DATa:STOP 100000") #try 2500 as the command for all
+    # #try WAVFrm? for waveform preamble
+
 
     # Query scaling parameters from the preamble
     y_mult = float(scope.query("WFMOutpre:YMUlt?"))
@@ -52,8 +73,10 @@ try:
 
     scope.write("ACQuire:STOPAfter SEQuence")
 
-    # Read binary block data directly into a numpy array
-    adc_samples = np.array(scope.query_binary_values("CURVe?", datatype='h', is_big_endian=True)) #b, h, d, f depending on the data width set above. 'h' is 2 byte signed integer, which is common for Tektronix scopes. Adjust as needed based on your scope's data format and the width you set. The is_big_endian flag may also need to be adjusted based on your scope's data format. Check your scope's documentation for details on the binary data format it uses.
+    # # Read binary block data directly into a numpy array
+    # adc_samples = np.array(scope.query_binary_values("CURVe?", datatype='h', is_big_endian=True)) #b, h, d, f depending on the data width set above. 'h' is 2 byte signed integer, which is common for Tektronix scopes. Adjust as needed based on your scope's data format and the width you set. The is_big_endian flag may also need to be adjusted based on your scope's data format. Check your scope's documentation for details on the binary data format it uses.
+
+    adc_samples = step_data_puller(scope, channel=channel)
 
     print(f"Read {adc_samples.size} ADC samples from scope")
     scope.write("ACQuire:STOPAfter RUNSTOP")

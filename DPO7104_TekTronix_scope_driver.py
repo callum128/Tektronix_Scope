@@ -15,14 +15,16 @@ class DPO7104_TekTronix_scope(RexSupport):
     raw waveform downloads for CH1 and CH2, and basic trigger setup on CH2.
 
     KNOWN FOOTGUNS:
-    - Waveform downloads can be slow and massive may cause the scope's CPU to struggle, or even overfill the computer storage.
-        TO FIX: try lowering the sampling rate, 100000 is the issue
-    - Area measurement pulled from the scope vs area calculated from the pulled waveform can differ, if the first 
+    - Waveform downloads can be slow and massive, may cause the scope's CPU to struggle, or even overfill the computer storage.
+        TO FIX: try lowering the sampling rate, 100000 probably the issue, or data width
+    - Area measurement pulled from the scope vs area calculated from the pulled waveform can differ if the first 
         cursor is <1.0e-7s or negative, relative to the trigger. This is only an issue if you are setting the cursor 
         tiny and trying to compare the area measurement to a calculated area from the waveform, if you are just 
         using the area measurement as a relative metric, such as for emission scans, then this is not a problem.
     - This driver assume a negative PMT output and inverts the area measurement accordingly, if you are have  
-        a positive signal you will need to multiply the area by -1 to get the correct polarity.
+        a positive signal you will need to multiply the area by -1 to get the correct polarity. Beware of waveforms
+        that go positive then negative or vice versa, as the area measurement may not reflect the full area of 
+        the pulse in this case.
     - The SCOPE_ADDRESS and RESOURCE_MANAGER may need to be adjusted depending on your specific GPIB connection. 
     - If you do not know the strongest transition to maunally set the vertical scale for, you can run a quick emission scan and
         look at the CH1 waveform data (on the scope) to find the max peak, then set the vertical scale so that this peak fills
@@ -189,7 +191,7 @@ class DPO7104_TekTronix_scope(RexSupport):
     def measure_waveform(self, channel=1):
         """Slowly pulls the waveform data, and data to make the time axis. Channel 2 for trigger for debugging.
         This will also create a massive amount of data and the scope's cpu can struggle to keep up, 
-        so use with caution and consider using only area measurements for faster acquisition loops."""
+        so use with caution and consider using only area measurements for long acquisition loops."""
 
         self.scope.write(f"DATa:SOUrce CH{channel}")
         self.scope.write("DATa:ENCdg RIBINARY")
