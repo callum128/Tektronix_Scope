@@ -14,6 +14,20 @@ class DPO7104_TekTronix_scope(RexSupport):
     The driver supports averaged acquisitions, cursor-based gated area measurements on CH1,
     raw waveform downloads for CH1 and CH2, and basic trigger setup on CH2.
 
+    KNOWN FOOTGUNS:
+    - Waveform downloads can be slow and massive may cause the scope's CPU to struggle, or even overfill the computer storage.
+        TO FIX: try lowering the sampling rate, 100000 is the issue
+    - Area measurement pulled from the scope vs area calculated from the pulled waveform can differ, if the first 
+        cursor is <1.0e-7s or negative, relative to the trigger. This is only an issue if you are setting the cursor 
+        tiny and trying to compare the area measurement to a calculated area from the waveform, if you are just 
+        using the area measurement as a relative metric, such as for emission scans, then this is not a problem.
+    - This driver assume a negative PMT output and inverts the area measurement accordingly, if you are have  
+        a positive signal you will need to multiply the area by -1 to get the correct polarity.
+    - The SCOPE_ADDRESS and RESOURCE_MANAGER may need to be adjusted depending on your specific GPIB connection. 
+    - If you do not know the strongest transition to maunally set the vertical scale for, you can run a quick emission scan and
+        look at the CH1 waveform data (on the scope) to find the max peak, then set the vertical scale so that this peak fills
+        the screen, this will hopefully ensure all peaks are relative and do not go offscreen.
+
     Attributes:
         state (int): Measurement cycle counter.
         connect_to_rex (bool): Whether to forward payloads to a Rex server link.
@@ -132,7 +146,7 @@ class DPO7104_TekTronix_scope(RexSupport):
         #v_position = 3.8 
         #self.scope.write(f'CH1:POSition {v_position}') #turn off to allow manual adjustment
 
-        self.scope.write("*CLS")
+        self.scope.write("*CLS") #clears the event status registers, not the acquisitions
 
     def set_cursors(self): 
         self.scope.write('CURSor:STATE ON') #this doesn't always set cursors to be from channel 1, check the scope
@@ -173,7 +187,10 @@ class DPO7104_TekTronix_scope(RexSupport):
             )
     
     def measure_waveform(self, channel=1):
-        """Slowly pulls the waveform data, and data to make the time axis. Channel 2 for trigger."""
+        """Slowly pulls the waveform data, and data to make the time axis. Channel 2 for trigger for debugging.
+        This will also create a massive amount of data and the scope's cpu can struggle to keep up, 
+        so use with caution and consider using only area measurements for faster acquisition loops."""
+
         self.scope.write(f"DATa:SOUrce CH{channel}")
         self.scope.write("DATa:ENCdg RIBINARY")
         self.scope.write("DATa:WIDth 2") 
@@ -220,7 +237,7 @@ class DPO7104_TekTronix_scope(RexSupport):
             )
         
     def measure(self):
-        self.scope.write("*CLS")
+        self.scope.write("*CLS") #clears the event status registers, not the acquisitions
 
         if self.area_enabled:
             self.measure_area()

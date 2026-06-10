@@ -1,0 +1,13 @@
+[session.info]
+name = "Callum Clausen"
+email = "callum.clausen@pg.canterbury.ac.nz"
+experiment_name = "Test_Lifetime_Experiment"
+experiment_description = "This is a test experiment"
+
+[device.DPO7104_TekTronix_scope]
+averages = 10
+start_bound = 1.0e-6
+end_bound = 8.0e-3
+area = false
+waveform = true
+trigger = false
