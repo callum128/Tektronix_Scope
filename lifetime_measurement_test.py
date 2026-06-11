@@ -18,7 +18,7 @@ def lifetime_experiment_test():
         return
 
     dir_path = os.path.dirname(os.path.abspath(__file__))
-    config_path = os.path.join(dir_path, "lifetime_config.toml") #will need to adjust the path to the config file as needed
+    config_path = os.path.join(dir_path, "lifetime_config.toml") #adjust the path to the config file as needed
     config_path = os.path.abspath(config_path)
 
     experiment = Session(scope_measurement, config_path)

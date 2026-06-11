@@ -14,27 +14,31 @@ channel = 1
 print(rm.list_resources())
 print("Connecting to oscilloscope...")
 
-def step_data_puller(scope, channel=1):
-    """Pulls a few points of the waveform data, then step further and pulls again, to try to avoid overwhelming the scope's 
-    CPU and causing it to crash. This is a bit of a hack, but it will probably work."""
-    scope.write(f"DATa:SOUrce CH{channel}")
-    scope.write("DATa:ENCdg RIBINARY")
-    scope.write("DATa:WIDth 2") #1 byte, 2 byte, 4 byte, 8 byte data width. 2 byte is typical for Tektronix scopes, but check your scope's documentation to be sure. Using the wrong width can lead to incorrect data scaling and interpretation.
-
+def step_data_puller(scope):
+    """Pulls one point of the waveform data, then steps further and pulls again, to try to avoid overwhelming the scope's 
+    CPU and saving massive data files. This is a bit of a hack, but it will probably work."""
+    
     total_points = int(scope.query("HORizontal:RECOrdlength?"))  #should be 100000 for real data
     print(f"Record length: {total_points} points")
     smaller_size = 5000 #adjust as needed
-    step_size = int(total_points / smaller_size) 
-    
-    adc_samples = np.zeros(smaller_size) #preallocate a numpy array for the ADC samples, adjust dtype as needed based on the data width set above
+    step_size = total_points // smaller_size
+    adc_samples = np.zeros(smaller_size, dtype=) #preallocate a numpy array for the ADC samples, adjust dtype as needed based on the data width set above
+
+    pull_log = 0
 
     for start in range(1, total_points+1, step_size):
         stop = min(start + 1, total_points) #pulls 1 point every step
         scope.write(f"DATa:STARt {start}")
         scope.write(f"DATa:STOP {stop}")
-        adc_samples[start//step_size] = float(scope.query_binary_values("CURVe?", datatype='h', is_big_endian=True)) #may need [0]
+
+        data = (scope.query_binary_values("CURVe?", datatype='h', is_big_endian=True, container=np.ndarray)) #may need [0] or different type
+        print(data)
+        adc_samples[start//step_size] = int(data)
+        
+        pull_log += 1
         #time.sleep(0.1)
 
+    print(f'Made: {pull_log} CURve? pulls')
     return np.array(adc_samples)
 
 
@@ -44,9 +48,43 @@ try:
 
     print(scope.query("*IDN?").strip())
 
-    #breakpoint()
+    scope.write(f"ACQuire:MODe SAMple")
 
-    scope.write(f"ACQuire:MODe SAMple") #set to sample
+    print("Testing Transfer Data Decimation Command variations...")
+    
+    # Variant A: DATa:SAMPLIng
+    try:
+        scope.write("DATa:SAMPLIng 10") # Keep every 10th point
+        time.sleep(0.1)
+        sample_check = scope.query("DATa:SAMPLIng?").strip()
+        print(f"  [Variant A] DATa:SAMPLIng accepted! Value: {sample_check}")
+    except Exception:
+        print("  [Variant A] DATa:SAMPLIng failed or unsupported.")
+        
+    # Variant B: DATa:STEP (Common on legacy TDS/DPO models)
+    try:
+        scope.write("DATa:STEP 10") # Sample step interval 
+        time.sleep(0.1)
+        step_check = scope.query("DATa:STEP?").strip()
+        print(f"  [Variant B] DATa:STEP accepted! Value: {step_check}")
+    except Exception:
+        print("  [Variant B] DATa:STEP failed or unsupported.")
+
+    print("Testing HORizontal:RECOrdlength...")
+    # Read original value first
+    orig_length = scope.query("HORizontal:RECOrdlength?").strip()
+    print(f"  Current Record Length: {orig_length} points")
+    
+    # Try setting to a smaller size (e.g., 5000 or 2500 depending on valid steps)
+    target_length = "5000"
+    scope.write(f"HORizontal:RECOrdlength {target_length}")
+    time.sleep(0.1)
+    
+    # Query back to verify change
+    new_length = scope.query("HORizontal:RECOrdlength?").strip()
+    print(f"  New Record Length Verified: {new_length} points")
+
+    breakpoint()
 
     # scope.write(f"DATa:SOUrce CH{channel}")
     # scope.write("DATa:ENCdg RIBINARY")
@@ -73,6 +111,10 @@ try:
     print(f"Initial acquisition count: {acq}")
 
     print("Stopping acquisition and reading waveform data...")
+
+    scope.write(f"DATa:SOUrce CH{channel}")
+    scope.write("DATa:ENCdg RIBINARY")
+    scope.write("DATa:WIDth 2") #1 byte, 2 byte, 4 byte, 8 byte data width. 2 byte is typical for Tektronix scopes, but check your scope's documentation to be sure. Using the wrong width can lead to incorrect data scaling and interpretation.
 
     scope.write("ACQuire:STOPAfter SEQuence")
 

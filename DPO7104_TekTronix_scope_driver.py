@@ -12,22 +12,23 @@ class DPO7104_TekTronix_scope(RexSupport):
     capture, and optional forwarding of measurement payloads to a Rex server.
 
     The driver supports averaged acquisitions, cursor-based gated area measurements on CH1,
-    raw waveform downloads for CH1 and CH2, and basic trigger setup on CH2. Time axis must be reconstructed. 
+    raw voltage waveform downloads for CH1 and CH2, and limited trigger setup on CH2. Time axis 
+    must be reconstructed from saved parameters. 
 
     KNOWN FOOTGUNS:
     - Waveform downloads can be slow and massive, may cause the scope's CPU to struggle, or even overfill the computer storage.
-        TO FIX: try lowering the sampling rate, 100000 probably the issue, or data width
+        TO FIX: try lowering the sampling rate, 100000 probably the issue, or use step_data_puller()
     - Area measurement pulled from the scope vs area calculated from the pulled waveform can differ if the first 
         cursor is <1.0e-7s or negative, relative to the trigger. This is only an issue if you are setting the cursor 
-        tiny and trying to compare the area measurement to a calculated area from the waveform, if you are just 
+        tiny and then trying to compare the area measurement to a calculated area from the waveform, if you are just 
         using the area measurement as a relative metric, such as for emission scans, then this is not a problem.
-    - This driver assume a negative PMT output and inverts the area measurement accordingly, if you are have  
+    - This driver assumes a negative-going output and inverts the area measurement accordingly, if you are have  
         a positive signal you will need to multiply the area by -1 to get the correct polarity. Beware of waveforms
-        that go positive then negative or vice versa, as the area measurement may not reflect the full area of 
+        that have significant positive and negative components, as the area measurement may not reflect the full area of 
         the pulse in this case.
     - The SCOPE_ADDRESS and RESOURCE_MANAGER may need to be adjusted depending on your specific GPIB connection. 
     - If you do not know the strongest transition to maunally set the vertical scale for, you can run a quick emission scan and
-        look at the CH1 waveform data (on the scope) to find the max peak, then set the vertical scale so that this peak fills
+        look at the CH1 waveform (on the scope) to find the max peak, then set the vertical scale so that this peak fills
         the screen, this will hopefully ensure all peaks are relative and do not go offscreen.
 
     Attributes:
@@ -48,7 +49,7 @@ class DPO7104_TekTronix_scope(RexSupport):
         set_config(): Apply configuration and prepare acquisition settings.
         set_cursors(): Configure vertical cursor positions and gated area measurement.
         measure_area(): Acquire gated area and convert polarity for PMT output.
-        measure_waveform(channel=1): Download and scale waveform data from the given channel.
+        measure_waveform(channel=1): Download and scale the waveform data and time axis parameters from the given channel.
         measure(): Run enabled measurements and optionally send the payload to Rex.
         full_autoset(): Execute the instrument autoset sequence.
         close(): Close the PyVISA resource safely.
@@ -61,9 +62,9 @@ class DPO7104_TekTronix_scope(RexSupport):
     __toml_config__ = {
         "device.DPO7104_TekTronix_scope": {
             "_section_description": "DPO7104_TekTronix_scope configuration",
-            "averages": {"_value": 10, "_description": "Number of averages"}, #set to 1 for non-averaged data, set to >1 for averaged data, but be aware this will slow down your acquisition loop as the scope needs to acquire and process multiple waveforms for each measurement cycle
+            "averages": {"_value": 10, "_description": "Number of averages"}, #set to 1 for non-averaged data, set to >1 for averaged data, but be aware this will slow down your acquisition loop
             "start_bound": {"_value": 1.0e-7, "_description": "Starting bound, the position of the first cursor relative to the trigger"},
-            "end_bound": {"_value": 1.0e-4, "_description": "Ending bound, the position of the second cursor relative to the trigger"},
+            "end_bound": {"_value": 1.0e-3, "_description": "Ending bound, the position of the second cursor relative to the trigger"},
             "area": {"_value": True, "_description": "Pulls area data"},
             "waveform": {"_value": False, "_description": "Pulls wavefrom data, channel 1"},
             "trigger": {"_value": False, "_description": "Pulls trigger waveform data, channel 2"},
@@ -90,7 +91,7 @@ class DPO7104_TekTronix_scope(RexSupport):
             "area": Measurement(data=[], unit="mV*s"), 
             "waveform": Measurement(data=[], unit="mV"),
             "trigger": Measurement(data=[], unit="mV"),
-            "time_from_trigger": Measurement(data=[], unit="s")
+            "time_from_trigger_parameters": Measurement(data=[], unit="s") #in seconds after reconstruction
         }
 
         self.validate_measurements()
@@ -101,7 +102,7 @@ class DPO7104_TekTronix_scope(RexSupport):
                 rm = pyvisa.ResourceManager(self.RESOURCE_MANAGER)
                 if self.SCOPE_ADDRESS not in rm.list_resources():
                     self.logger.error(f"Scope address {self.SCOPE_ADDRESS} not found in available resources: {rm.list_resources()}")
-                    raise Exception(f'{self.SCOPE_ADDRESS} not in {rm.list_resources()}')
+                    raise Exception(f'{self.SCOPE_ADDRESS} not in {rm.list_resources()}. Try changing the RESOURCE_MANAGER')
                 else:
                     self.scope = rm.open_resource(self.SCOPE_ADDRESS)
                     self.scope.timeout = 25000 
@@ -116,7 +117,7 @@ class DPO7104_TekTronix_scope(RexSupport):
                         self.logger.error(f"Scope did not accept ID query: {e}")
 
             except Exception as e:
-                self.logger.error(f"pyvisa.ResourceManager did not work: {e}")
+                self.logger.error(f"pyvisa.ResourceManager() did not work: {e}")
 
     def set_config(self):
         self.averages = self.require_config("averages")
@@ -137,7 +138,7 @@ class DPO7104_TekTronix_scope(RexSupport):
         self.scope.write("TRIGger:A:TYPe EDGE")
         self.scope.write("TRIGger:A:EDGE:SOUrce CH2") 
         self.scope.write("TRIGger:A:EDGE:SLOPe FALL") 
-        #self.scope.write("TRIGger:A SETLevel") #setting to 50% gets lost in the noise
+        #self.scope.write("TRIGger:A SETLevel") #setting to 50% often gets lost in the noise, set manually instead
 
         if self.averages == 1:
             self.scope.write(f"ACQuire:MODe SAMple")
@@ -151,7 +152,7 @@ class DPO7104_TekTronix_scope(RexSupport):
         self.scope.write("*CLS") #clears the event status registers, not the acquisitions
 
     def set_cursors(self): 
-        self.scope.write('CURSor:STATE ON') #this doesn't always set cursors to be from channel 1, check the scope
+        self.scope.write('CURSor:STATE ON') #this sometimes doesn't set cursors to be from channel 1, check the scope
         self.scope.write('CURSor:FUNCtion VBARS')
         self.scope.write(f'CURSor:VBARS:POS1 {self.start_bound}')
         self.scope.write(f'CURSor:VBARS:POS2 {self.end_bound}')
@@ -191,7 +192,7 @@ class DPO7104_TekTronix_scope(RexSupport):
             )
     
     def measure_waveform(self, channel=1):
-        """Slowly pulls the waveform data, and data to reconstruct the time axis. Channel 2 for trigger for debugging.
+        """Slowly pulls the waveform data and the parameters to reconstruct the time axis. Channel 2 for trigger for debugging.
         This will save a massive amount of data and the scope's cpu can struggle to keep up, 
         so use with caution and consider using only area measurements for long acquisition loops."""
 
@@ -220,6 +221,7 @@ class DPO7104_TekTronix_scope(RexSupport):
         y_mult = float(self.scope.query("WFMOutpre:YMUlt?"))
         y_off  = float(self.scope.query("WFMOutpre:YOFf?"))
         y_zero = float(self.scope.query("WFMOutpre:YZEro?"))
+
         x_incr = float(self.scope.query("WFMOutpre:XINcr?"))
         x_zero = float(self.scope.query("WFMOutpre:XZEro?"))
         trigger_pos = float(self.scope.query("HORizontal:MAIn:SCAle?"))
@@ -239,10 +241,10 @@ class DPO7104_TekTronix_scope(RexSupport):
         data = voltages.tolist()
         #times = time_axis.tolist()
 
-        time_data = [f'np.arange({adc_samples.size}) * {x_incr} + {x_zero} - {trigger_pos}', adc_samples.size, x_incr, x_zero, trigger_pos] #just send the parameters to reconstruct the time axis on the other end, to save bandwidth and avoid sending massive time arrays
+        time_params = [f'np.arange({adc_samples.size}) * {x_incr} + {x_zero} - {trigger_pos}', adc_samples.size, x_incr, x_zero, trigger_pos] #just send the parameters to reconstruct the time axis on the other end, to save bandwidth and avoid sending massive time arrays
 
-        self.measurements["time_from_trigger"] = Measurement(
-                data=[time_data],
+        self.measurements["time_from_trigger_parameters"] = Measurement(
+                data=[time_params],
                 unit="s", #need to reconstruct, but will then be in s
             )
 
@@ -256,6 +258,8 @@ class DPO7104_TekTronix_scope(RexSupport):
                 data=[data],
                 unit="mV",
             )
+        else:
+            raise Exception('Only channel 1 and 2 supported for data saving, but this could easily be modified')
         
     def measure(self):
         self.scope.write("*CLS") #clears the event status registers, not the acquisitions
@@ -276,7 +280,6 @@ class DPO7104_TekTronix_scope(RexSupport):
         return self.measurements
     
     def full_autoset(self):
-        self.scope.query("*OPC?")
         self.scope.write("AUToset EXECute")
         
     def close(self):

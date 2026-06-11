@@ -20,15 +20,15 @@ def emission_experiment_test():
         steps = int((spec.final_wavelength - spec.initial_wavelength) / spec.step_size)
         for i in range(steps):
             val = tektronix.measure()
-            spec.spectrometer_step()
             spec.measure()
+            spec.spectrometer_step()
             
         tektronix.close()
 
         return
 
     dir_path = os.path.dirname(os.path.abspath(__file__))
-    config_path = os.path.join(dir_path, "emission_config.toml") #will need to adjust the path to the config file as needed
+    config_path = os.path.join(dir_path, "emission_config.toml") #adjust the path to the config file as needed
     config_path = os.path.abspath(config_path)
 
     experiment = Session(scope_spec_measurement, config_path)
