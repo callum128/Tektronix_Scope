@@ -17,7 +17,7 @@ class DPO7104_TekTronix_scope(RexSupport):
 
     KNOWN FOOTGUNS:
     - Waveform downloads can be slow and massive, may cause the scope's CPU to struggle, or even overfill the computer storage.
-        TO FIX: try lowering the sampling rate, 100000 probably the issue, or use step_data_puller()
+        Used the samples_saved config to reduce the amount saved.
     - Area measurement pulled from the scope vs area calculated from the pulled waveform can differ if the first 
         cursor is <1.0e-7s or negative, relative to the trigger. This is only an issue if you are setting the cursor 
         tiny and then trying to compare the area measurement to a calculated area from the waveform, if you are just 
