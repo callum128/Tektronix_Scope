@@ -49,7 +49,8 @@ class DPO7104_TekTronix_scope(RexSupport):
         set_config(): Apply configuration and prepare acquisition settings.
         set_cursors(): Configure vertical cursor positions and gated area measurement.
         measure_area(): Acquire gated area and convert polarity for PMT output.
-        measure_waveform(channel=1): Download and scale the waveform data and time axis parameters from the given channel.
+        step_data_puller(new_size=50): Steps to get waveform voltage data, saves storage space
+        measure_waveform(channel=1): Download and scale the waveform voltage data and time axis parameters from the given channel.
         measure(): Run enabled measurements and optionally send the payload to Rex.
         full_autoset(): Execute the instrument autoset sequence.
         close(): Close the PyVISA resource safely.
@@ -66,8 +67,9 @@ class DPO7104_TekTronix_scope(RexSupport):
             "start_bound": {"_value": 1.0e-7, "_description": "Starting bound, the position of the first cursor relative to the trigger"},
             "end_bound": {"_value": 1.0e-3, "_description": "Ending bound, the position of the second cursor relative to the trigger"},
             "area": {"_value": True, "_description": "Pulls area data"},
-            "waveform": {"_value": False, "_description": "Pulls wavefrom data, channel 1"},
+            "waveform": {"_value": False, "_description": "Pulls voltage wavefrom data, channel 1"},
             "trigger": {"_value": False, "_description": "Pulls trigger waveform data, channel 2"},
+            "samples_saved": {"_value": 50, "_description": "Number of samples to be saved of the waveform"}, #100000 for all. Don't do this for multiple scans.
         }
     }
 
@@ -88,10 +90,10 @@ class DPO7104_TekTronix_scope(RexSupport):
         self.set_cursors()
 
         self.measurements = {
-            "area": Measurement(data=[], unit="mV*s"), 
-            "waveform": Measurement(data=[], unit="mV"),
-            "trigger": Measurement(data=[], unit="mV"),
-            "time_from_trigger_parameters": Measurement(data=[], unit="s") #in seconds after reconstruction
+            "area": Measurement(data=[], unit="mV*s"),  #may not be these units
+            "waveform": Measurement(data=[], unit="mV"), #may not be these units
+            "trigger": Measurement(data=[], unit="mV"), #may not be these units
+            "time_from_trigger_parameters": Measurement(data=[], unit="s") #unit after reconstruction, use: np.arange(0, {int(self.record_length)}, step={int(self.record_length)//voltages.size}) * {x_incr} + {x_zero} - {trigger_pos}
         }
 
         self.validate_measurements()
@@ -126,6 +128,7 @@ class DPO7104_TekTronix_scope(RexSupport):
         self.area_enabled = self.require_config("area")
         self.waveform_enabled = self.require_config("waveform")
         self.trigger_enabled = self.require_config("trigger")
+        self.samples_saved = self.require_config("samples_saved")
 
         if not self.scope:
             raise RuntimeError("Oscilloscope connection is not open. Check the cable connections.")
@@ -183,19 +186,38 @@ class DPO7104_TekTronix_scope(RexSupport):
         
         self.scope.write('MEASUrement:IMMEd:STATE ON')
         area = float(self.scope.query('MEASUrement:IMMEd:VALue?'))
+        a_unit = str(self.scope.query('MEASUrement:IMMEd:UNits?').strip()).strip('"')
 
         data = -1.0 * area #PMT is negative voltage
 
         self.measurements["area"] = Measurement(
                 data=[data],
-                unit="mV*s",
+                unit=a_unit,
             )
+        
+    def step_data_puller(self, new_size=50):
+        """Pulls one point of the waveform data, then steps further and pulls again, to try to avoid overwhelming the scope's 
+        CPU and saving massive data files. This is a bit of a hack, but you cannot change the scope's sampling rate (and thus 
+        record length) without also changing the horizontal scale. If new_size is too big it will be very slow, but won't
+        create massive data files."""
+        total_points = self.record_length  #likely to be 100000 for real data
+        step_size = total_points // new_size
+        adc_samples = np.zeros(new_size)
+        pull_log = 0
+
+        for start in range(1, total_points+1, step_size):
+            stop = min(start, total_points) #pulls 1 point every step
+            self.scope.write(f"DATa:STARt {start}")
+            self.scope.write(f"DATa:STOP {stop}")
+            adc_samples[start//step_size] = (self.scope.query_binary_values("CURVe?", datatype='h', is_big_endian=True, container=np.ndarray))[0]
+            pull_log += 1
+
+        self.logger.debug(f'Made: {pull_log} CURve? pulls')
+        return np.array(adc_samples)
     
     def measure_waveform(self, channel=1):
         """Slowly pulls the waveform data and the parameters to reconstruct the time axis. Channel 2 for trigger for debugging.
-        This will save a massive amount of data and the scope's cpu can struggle to keep up, 
-        so use with caution and consider using only area measurements for long acquisition loops."""
-
+        This will save a lot of data and the scope's cpu can struggle to keep up, so use with caution and only use if required"""
         if self.averages > 1 and not self.area_enabled: #wait till fully averaged
             self.scope.write('ACQuire:STOPAfter SEQUENCE')
             self.scope.write('ACQuire:STATE RUN')
@@ -214,8 +236,22 @@ class DPO7104_TekTronix_scope(RexSupport):
         self.scope.write(f"DATa:SOUrce CH{channel}")
         self.scope.write("DATa:ENCdg RIBINARY")
         self.scope.write("DATa:WIDth 2") 
-        self.scope.write("DATa:STARt 1")
-        self.scope.write("DATa:STOP 100000") #save all 100000 data points, will take ~4s, there is probably a better method
+
+        self.record_length = int(self.scope.query("HORizontal:RECOrdlength?").strip())
+
+        if self.samples_saved == 100000:
+            self.scope.write("DATa:STARt 1")
+            self.scope.write(f"DATa:STOP {self.record_length}") #save all 100000 data points, will take ~4s, there is probably a better method
+            self.scope.write("ACQuire:STOPAfter SEQuence") #stops the scope to pull, may need to put inside step_data_puller
+            adc_samples = np.array(self.scope.query_binary_values("CURVe?", datatype='h', is_big_endian=True))
+            self.scope.write("ACQuire:STOPAfter RUNSTOP")
+            self.scope.write("ACQuire:STATE RUN")
+
+        else:
+            self.scope.write("ACQuire:STOPAfter SEQuence")
+            adc_samples = self.step_data_puller(new_size=self.samples_saved)
+            self.scope.write("ACQuire:STOPAfter RUNSTOP")
+            self.scope.write("ACQuire:STATE RUN")
 
         # Query scaling parameters from the preamble
         y_mult = float(self.scope.query("WFMOutpre:YMUlt?"))
@@ -228,35 +264,31 @@ class DPO7104_TekTronix_scope(RexSupport):
 
         self.logger.debug(f"Waveform scaling parameters: y_mult={y_mult}, y_off={y_off}, y_zero={y_zero}, x_incr={x_incr}, x_zero={x_zero}, trigger_pos={trigger_pos}")
 
-        self.scope.write("ACQuire:STOPAfter SEQuence") #stops the scope to pull, may need to put inside step_data_puller
-
-        adc_samples = np.array(self.scope.query_binary_values("CURVe?", datatype='h', is_big_endian=True))
-
-        self.scope.write("ACQuire:STOPAfter RUNSTOP")
-        self.scope.write("ACQuire:STATE RUN")
-
         voltages = (adc_samples - y_off) * y_mult + y_zero
         #time_axis = np.arange(adc_samples.size) * x_incr + x_zero - trigger_pos #relative to trigger
 
         data = voltages.tolist()
         #times = time_axis.tolist()
+        y_unit = str(self.scope.query("WFMOutpre:YUnit?").strip()).strip('"') #to check mV or V
+        x_unit = str(self.scope.query("WFMOutpre:XUnit?").strip()).strip('"')
 
-        time_params = [f'np.arange({adc_samples.size}) * {x_incr} + {x_zero} - {trigger_pos}', adc_samples.size, x_incr, x_zero, trigger_pos] #just send the parameters to reconstruct the time axis on the other end, to save bandwidth and avoid sending massive time arrays
-
+        time_params = [int(self.record_length), int(self.record_length)//voltages.size, x_incr, x_zero, trigger_pos]
+        #times = np.arange(0, {int(self.record_length)}, step={int(self.record_length)//voltages.size}) * {x_incr} + {x_zero} - {trigger_pos}
+        
         self.measurements["time_from_trigger_parameters"] = Measurement(
                 data=[time_params],
-                unit="s", #need to reconstruct, but will then be in s
+                unit=x_unit, #need to reconstruct, but will then be in s
             )
 
         if channel == 1:
             self.measurements["waveform"] = Measurement(
                 data=[data],
-                unit="mV",
+                unit=y_unit,
             )
         elif channel == 2:
             self.measurements["trigger"] = Measurement(
                 data=[data],
-                unit="mV",
+                unit=y_unit,
             )
         else:
             raise Exception('Only channel 1 and 2 supported for data saving, but this could easily be modified')

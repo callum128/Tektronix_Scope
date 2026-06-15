@@ -1,7 +1,7 @@
 [session.info]
 name = "Callum Clausen"
 email = "callum.clausen@pg.canterbury.ac.nz"
-experiment_name = "Avg_quick_600_645_Test_Emission_Experiment"
+experiment_name = "Avg_step_waveform_merc_lamp_experiment"
 experiment_description = "This is a test experiment"
 
 [device.DPO7104_TekTronix_scope]
@@ -9,14 +9,15 @@ averages = 10
 start_bound = 1.0e-6
 end_bound = 8.0e-3
 area = true
-waveform = false
+waveform = true
 trigger = false
+samples_saved = 50
 
 [device.iHR550]
 grating = "VIS"
-step_size = 0.5
-initial_wavelength = 600
-final_wavelength = 645
+step_size = 0.1
+initial_wavelength = 543.0
+final_wavelength = 543.5
 bypass_homing=false
 [device.iHR550.slits]
 Entrance_Front = 0.2

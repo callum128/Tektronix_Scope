@@ -56,8 +56,10 @@ real_sample_negpos ='Outputs/1D2_3H5_from_3P0_test_05_06_2026_14_12_42_196.toml'
 real_sample_zeropos = 'Outputs/1D2_3H5_from_3P0_test_05_06_2026_14_15_09_072.toml' #zero is bad, this must be the error
 real_sample_tinypos = 'Outputs/1D2_3H5_from_3P0_test_05_06_2026_14_17_03_410.toml' #1e-9 is too small
 real_sample_tinypos2 = 'Outputs/1D2_3H5_from_3P0_test_05_06_2026_14_19_28_543.toml' #1e-7 is not too small
+final_test = 'Outputs/Avg_step_waveform_merc_lamp_experiment_15_06_2026_16_16_41_984.toml'
+lifetime_test = 'Outputs/Test_Lifetime_Experiment_15_06_2026_16_42_57_178.toml'
 
-data_path = Path(__file__).parent / real_sample_tinypos
+data_path = Path(__file__).parent / final_test
 
 # Read in the rex toml data format, reads in only the .data layer, ignoring configurations etc.This handles importing nested data
 
@@ -75,11 +77,13 @@ data = load_rex_data(data_path, "polars")
 sample_number = 0 #each times the experiment loops is a 'sample'
 
 waveforms = np.array(data['DPO7104_TekTronix_scope_waveform'][sample_number])
-times = np.array(data['DPO7104_TekTronix_scope_time_from_trigger'][sample_number])
+time_params = np.array(data['DPO7104_TekTronix_scope_time_from_trigger_parameters'][sample_number])
 area = np.array(data['DPO7104_TekTronix_scope_area'][sample_number])
 print(f'Area from the scope: {area:.4e}')
 
-print(f'First 10 time points from the scope: {times[:10]}')
+print(time_params)
+
+times = np.arange(0, time_params[0], step=time_params[1]) * time_params[2] + time_params[3] - time_params[4]
 
 # y0 = 0.0
 # ymult = 9.375e-5
@@ -103,17 +107,17 @@ stop = 5.0e-3 #match the toml
 #shifted_times = times - times[0] #shift so the first point is at 0 seconds, adjust as needed based on expected delay of PMT pulse after trigger
 #shifting the trigger to 0 doesn;t change the area, duh
 
-computed_area, summed_area = trigger_dependent_custom_integration(times, waveforms, start, stop)
-computed_area = -computed_area #negate to match the scope's convention of negative area for downward pulses, adjust as needed based on your specific waveform and expected pulse polarity
-print(f"Computed area from the waveform: {computed_area:.4e}")
-print(f'Difference compared to scope area: {computed_area / area:.2f} times the scope area')
+# computed_area, summed_area = trigger_dependent_custom_integration(times, waveforms, start, stop)
+# computed_area = -computed_area #negate to match the scope's convention of negative area for downward pulses, adjust as needed based on your specific waveform and expected pulse polarity
+# print(f"Computed area from the waveform: {computed_area:.4e}")
+# print(f'Difference compared to scope area: {computed_area / area:.2f} times the scope area')
 
-# box_area =-1* (8e-4) * (abs(max(waveforms)) - abs(min(waveforms)))
-# print(f"Area of the bounding box defined by the integration window and waveform amplitude: {box_area:.4e}")
-# print(f"Box - Computed: {box_area - computed_area:.4e}")
+# # box_area =-1* (8e-4) * (abs(max(waveforms)) - abs(min(waveforms)))
+# # print(f"Area of the bounding box defined by the integration window and waveform amplitude: {box_area:.4e}")
+# # print(f"Box - Computed: {box_area - computed_area:.4e}")
 
 
-ax.plot(times, waveforms, 'b--', label=f"Sample {sample_number}\nScope Area {area:.4e}")  
+ax.plot(times, waveforms, 'b--', label=f"Sample {sample_number}")  
 plt.vlines(start, ymin=min(waveforms), ymax=max(waveforms), colors='r', linestyles='--', label="Start")
 plt.vlines(stop, ymin=min(waveforms), ymax=max(waveforms), colors='m', linestyles='--', label="Stop")
 plt.title("Oscilloscope Waveform")

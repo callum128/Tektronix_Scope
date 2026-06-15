@@ -18,7 +18,7 @@ def emission_experiment_test():
 
         spec.set_wavelength(spec.initial_wavelength)
         steps = int((spec.final_wavelength - spec.initial_wavelength) / spec.step_size)
-        for i in range(steps):
+        for i in range(steps+1):
             val = tektronix.measure()
             spec.measure()
             spec.spectrometer_step()
