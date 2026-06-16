@@ -1,23 +1,23 @@
 [session.info]
 name = "Callum Clausen"
 email = "callum.clausen@pg.canterbury.ac.nz"
-experiment_name = "Emission_(3P0)1D2_3H4_waveforms_488.35_experiment"
-experiment_description = "Laser at 488.35nm. Spec 600-655nm"
+experiment_name = "Emission_3P0_3F2_488.35_experiment"
+experiment_description = "Laser at 488.35nm."
 
 [device.DPO7104_TekTronix_scope]
 averages = 15
 start_bound = 1.0e-7
-end_bound = 4.5e-4
+end_bound = 22.0e-6
 area = true
-waveform = true
+waveform = false
 trigger = false
 samples_saved = 50
 
 [device.iHR550]
 grating = "VIS"
-step_size = 0.5
-initial_wavelength = 600
-final_wavelength = 620
+step_size = 0.3
+initial_wavelength = 640.0
+final_wavelength = 670.0
 bypass_homing=false
 [device.iHR550.slits]
 Entrance_Front = 0.2

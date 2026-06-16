@@ -12,6 +12,7 @@ def double_exponential(t, A1, tau1, A2, tau2, y0):
 
 odd_1D2_3H4_lifetime = 'Outputs/(3P0)1D2-3H4_488.35nm_Test_Lifetime_Experiment_16_06_2026_11_41_23_899.toml'
 lifetime_3P0_3H5 = 'Outputs/3P0-3H5_488.35nm_Lifetime_16_06_2026_14_03_58_850.toml'
+lifetime_3P0_3F3 = 'Outputs/3P0-3F3_488.35nm_Lifetime_16_06_2026_16_04_14_279.toml'
 
 data_path = Path(__file__).parent / lifetime_3P0_3H5
 data = load_rex_data(data_path, "polars")
@@ -23,7 +24,7 @@ spec_wavelength = np.array(data['iHR550_wavelength (nm)'][0])
 print(time_params)
 
 times = np.arange(0, time_params[0], step=time_params[1]) * time_params[2] + time_params[3] - time_params[4]
-
+fig, ax = plt.subplots(figsize=(14,8))
 def no_rise(v_all, t_all):
     #cut to find slope from trigger start
     #v_start = np.searchsorted(t_all, 0.0)
@@ -51,7 +52,6 @@ def no_rise(v_all, t_all):
     residuals = v - v_fit
     
     # 6. Plotting
-    fig, ax = plt.subplots(figsize=(14,8))
     ax.set_xlabel('Time from Trigger (s)', fontsize=20, labelpad=3)
     ax.set_ylabel('Voltage (V)', fontsize=20, labelpad=3)
     ax.plot(t_all, v_all, 'k.')
@@ -64,4 +64,6 @@ def no_rise(v_all, t_all):
     plt.tight_layout()
 
 no_rise(waveforms, times)
+
+#ax.plot(times, waveforms)
 plt.show()
