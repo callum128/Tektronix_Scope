@@ -7,8 +7,10 @@ from rex_utils import load_rex_data
 
 sample = 'Outputs/Zoomed_out_quick_600_645_Test_Emission_Experiment_05_06_2026_16_31_54_372.toml'
 ten_avg_sample = 'Outputs/Avg_quick_600_645_Test_Emission_Experiment_05_06_2026_17_42_57_278.toml'
+big_gates = 'Outputs/Emission_(3P0)1D2_3H4_big_gate_488.35_experiment_16_06_2026_12_24_23_976.toml'
+small_gates = 'Outputs/Emission_(3P0)1D2_3H4_small_gate_488.35_experiment_16_06_2026_13_18_35_617.toml'
 
-data_path = Path(__file__).parent / ten_avg_sample
+data_path = Path(__file__).parent / small_gates
 
 # Read in the rex toml data format, reads in only the .data layer, ignoring configurations etc.This handles importing nested data
 
@@ -18,17 +20,17 @@ data = load_rex_data(data_path, "polars")
 areas = np.array(data['DPO7104_TekTronix_scope_area'])
 print(f'First 10 areas from the scope: {areas[:10]}')
 spec_wavelengths = np.array(data['iHR550_wavelength (nm)'])
-print(f'First 10 spectrometer wavelengths: {spec_wavelengths[:10]}')
+print(f'Last spec wavelength: {spec_wavelengths[-1]}')
 
 wavenumbers = 1e7 / spec_wavelengths
 
 fig, ax = plt.subplots()
 
-shifted_wavenumbers = -(wavenumbers - 16504-24.65) #shift so the first point is at 0 cm^-1 for 3H4, adjust as needed based on expected peak positions
+shifted_wavenumbers = -(wavenumbers - 16504-15.91) #shift so the first point is at 0 cm^-1 for 3H4, adjust as needed based on expected peak positions
 
 ax.plot(shifted_wavenumbers, areas)
 
-area_peaks, _ = signal.find_peaks(areas, height=0.001) #adjust height as needed based on expected peak amplitudes
+area_peaks, _ = signal.find_peaks(areas, height=0.00000001) #adjust height as needed based on expected peak amplitudes
 ax.plot(shifted_wavenumbers[area_peaks], areas[area_peaks], 'rx', label='Peaks')
 for i in area_peaks:
     ax.annotate(f'{shifted_wavenumbers[i]:.2f} cm$^{{-1}}$', xy=(shifted_wavenumbers[i], areas[i]), xytext=(10, 10), textcoords='offset points', color='red', fontsize=7)

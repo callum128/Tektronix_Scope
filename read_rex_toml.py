@@ -58,8 +58,9 @@ real_sample_tinypos = 'Outputs/1D2_3H5_from_3P0_test_05_06_2026_14_17_03_410.tom
 real_sample_tinypos2 = 'Outputs/1D2_3H5_from_3P0_test_05_06_2026_14_19_28_543.toml' #1e-7 is not too small
 final_test = 'Outputs/Avg_step_waveform_merc_lamp_experiment_15_06_2026_16_16_41_984.toml'
 lifetime_test = 'Outputs/Test_Lifetime_Experiment_15_06_2026_16_42_57_178.toml'
+waves_saved = 'Outputs/Emission_(3P0)1D2_3H4_waveforms_488.35_experiment_16_06_2026_13_40_28_704.toml'
 
-data_path = Path(__file__).parent / final_test
+data_path = Path(__file__).parent / waves_saved
 
 # Read in the rex toml data format, reads in only the .data layer, ignoring configurations etc.This handles importing nested data
 
@@ -74,7 +75,7 @@ data = load_rex_data(data_path, "polars")
 
 #print(data.head())
 
-sample_number = 0 #each times the experiment loops is a 'sample'
+sample_number = 20 #each times the experiment loops is a 'sample'
 
 waveforms = np.array(data['DPO7104_TekTronix_scope_waveform'][sample_number])
 time_params = np.array(data['DPO7104_TekTronix_scope_time_from_trigger_parameters'][sample_number])
@@ -101,8 +102,8 @@ fig, ax = plt.subplots()
 
 #ax.plot(times, voltages, 'r', label=f"Sample {sample_number}\nScope Area {area:.4e}")
 
-start = 1e-9 #shifting the trigger to 0 doesn;t change the area, duh
-stop = 5.0e-3 #match the toml
+#start = 1e-9 #shifting the trigger to 0 doesn;t change the area, duh
+#stop = 5.0e-3 #match the toml
 
 #shifted_times = times - times[0] #shift so the first point is at 0 seconds, adjust as needed based on expected delay of PMT pulse after trigger
 #shifting the trigger to 0 doesn;t change the area, duh
@@ -118,8 +119,8 @@ stop = 5.0e-3 #match the toml
 
 
 ax.plot(times, waveforms, 'b--', label=f"Sample {sample_number}")  
-plt.vlines(start, ymin=min(waveforms), ymax=max(waveforms), colors='r', linestyles='--', label="Start")
-plt.vlines(stop, ymin=min(waveforms), ymax=max(waveforms), colors='m', linestyles='--', label="Stop")
+#plt.vlines(start, ymin=min(waveforms), ymax=max(waveforms), colors='r', linestyles='--', label="Start")
+#plt.vlines(stop, ymin=min(waveforms), ymax=max(waveforms), colors='m', linestyles='--', label="Stop")
 plt.title("Oscilloscope Waveform")
 plt.xlabel("Time from Trigger (s)")
 plt.ylabel("Voltage (mV)")

@@ -16,7 +16,7 @@ class DPO7104_TekTronix_scope(RexSupport):
     must be reconstructed from saved parameters. 
 
     KNOWN FOOTGUNS:
-    - Waveform downloads can be slow and massive, may cause the scope's CPU to struggle, or even overfill the computer storage.
+    - Waveform downloads can be slow, massive and may cause the scope's CPU to struggle, or even overfill the computer storage.
         Used the samples_saved config to reduce the amount saved.
     - Area measurement pulled from the scope vs area calculated from the pulled waveform can differ if the first 
         cursor is <1.0e-7s or negative, relative to the trigger. This is only an issue if you are setting the cursor 
@@ -49,7 +49,7 @@ class DPO7104_TekTronix_scope(RexSupport):
         set_config(): Apply configuration and prepare acquisition settings.
         set_cursors(): Configure vertical cursor positions and gated area measurement.
         measure_area(): Acquire gated area and convert polarity for PMT output.
-        step_data_puller(new_size=50): Steps to get waveform voltage data, saves storage space
+        step_data_puller(new_size=50): Steps about to get sparse waveform voltage data, saves storage space.
         measure_waveform(channel=1): Download and scale the waveform voltage data and time axis parameters from the given channel.
         measure(): Run enabled measurements and optionally send the payload to Rex.
         full_autoset(): Execute the instrument autoset sequence.
@@ -58,7 +58,7 @@ class DPO7104_TekTronix_scope(RexSupport):
 
     #pyvisa settings
     RESOURCE_MANAGER = '' #default to pyvisa's default backend, but can be set to "@ivi" or other backends if needed for compatibility with specific GPIB-USB adapters or drivers. 
-    SCOPE_ADDRESS = "GPIB0::1::INSTR"
+    SCOPE_ADDRESS = "GPIB0::1::INSTR" #may need to change for PCI-GPIB
 
     __toml_config__ = {
         "device.DPO7104_TekTronix_scope": {
@@ -69,7 +69,7 @@ class DPO7104_TekTronix_scope(RexSupport):
             "area": {"_value": True, "_description": "Pulls area data"},
             "waveform": {"_value": False, "_description": "Pulls voltage wavefrom data, channel 1"},
             "trigger": {"_value": False, "_description": "Pulls trigger waveform data, channel 2"},
-            "samples_saved": {"_value": 50, "_description": "Number of samples to be saved of the waveform"}, #100000 for all. Don't do this for multiple scans.
+            "samples_saved": {"_value": 50, "_description": "Number of samples to be saved of the waveform"}, #100000 for all, ie for lifetimes. Don't do this for multiple scans.
         }
     }
 
@@ -90,9 +90,9 @@ class DPO7104_TekTronix_scope(RexSupport):
         self.set_cursors()
 
         self.measurements = {
-            "area": Measurement(data=[], unit="mV*s"),  #may not be these units
-            "waveform": Measurement(data=[], unit="mV"), #may not be these units
-            "trigger": Measurement(data=[], unit="mV"), #may not be these units
+            "area": Measurement(data=[], unit="Vs"),  #may not be these units on display
+            "waveform": Measurement(data=[], unit="V"), #may not be these units on display
+            "trigger": Measurement(data=[], unit="V"), #may not be these units on display
             "time_from_trigger_parameters": Measurement(data=[], unit="s") #unit after reconstruction, use: np.arange(0, {int(self.record_length)}, step={int(self.record_length)//voltages.size}) * {x_incr} + {x_zero} - {trigger_pos}
         }
 
@@ -239,7 +239,7 @@ class DPO7104_TekTronix_scope(RexSupport):
 
         self.record_length = int(self.scope.query("HORizontal:RECOrdlength?").strip())
 
-        if self.samples_saved == 100000:
+        if self.samples_saved > 90000:
             self.scope.write("DATa:STARt 1")
             self.scope.write(f"DATa:STOP {self.record_length}") #save all 100000 data points, will take ~4s, there is probably a better method
             self.scope.write("ACQuire:STOPAfter SEQuence") #stops the scope to pull, may need to put inside step_data_puller

@@ -1,8 +1,8 @@
 [session.info]
 name = "Callum Clausen"
 email = "callum.clausen@pg.canterbury.ac.nz"
-experiment_name = "Test_Lifetime_Experiment"
-experiment_description = "This is an example experiment to record the waveform for a lifetime measurement"
+experiment_name = "3P0-3H5_488.35nm_Lifetime"
+experiment_description = "This is an example experiment to record the waveform for a lifetime measurement. Also saves the spectrometer wavelength."
 
 [device.DPO7104_TekTronix_scope]
 averages = 1000
@@ -12,3 +12,18 @@ area = false
 waveform = true
 trigger = false
 samples_saved = 100000
+
+[device.iHR550]
+grating = "VIS"
+step_size = 0
+initial_wavelength = 544.36
+final_wavelength = 544.36
+bypass_homing=true
+[device.iHR550.slits]
+Entrance_Front = 0.2
+Entrance_Side = 0.0
+Exit_Front = 0.0
+Exit_Side = 0.2
+[device.iHR550.mirrors]
+Entrance = "front"
+Exit = "side"
