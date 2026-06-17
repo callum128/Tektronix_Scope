@@ -4,9 +4,9 @@ import time
 
 from rex_utils import Session
 
-from spcs_instruments import HoribaiHR550
+from spcs_instruments import HoribaiHR550, DPO7104_TekTronix_scope
 
-from DPO7104_TekTronix_scope_driver import DPO7104_TekTronix_scope
+#from DPO7104_TekTronix_scope_driver import DPO7104_TekTronix_scope
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 

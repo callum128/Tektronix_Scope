@@ -13,6 +13,7 @@ sample = 'Outputs/Emission_3P0_3H5_488.35_experiment_TEST_16_06_2026_14_35_24_77
 sample = 'Outputs/Emission_3P0_3H5_488.35_experiment_16_06_2026_14_48_36_780.toml'
 sample = 'Outputs/Emission_3P0_3F3_488.35_experiment_TEST_16_06_2026_16_12_33_447.toml'
 sample = 'Outputs/Emission_3P0_3F2_488.35_experiment_16_06_2026_16_31_54_403.toml'
+sample = 'Outputs/3P0-3H5_488.35_Emission_scope_test_17_06_2026_16_01_01_651.toml'
 
 data_path = Path(__file__).parent / sample
 
