@@ -13,7 +13,9 @@ sample = 'Outputs/Emission_3P0_3H5_488.35_experiment_TEST_16_06_2026_14_35_24_77
 sample = 'Outputs/Emission_3P0_3H5_488.35_experiment_16_06_2026_14_48_36_780.toml'
 sample = 'Outputs/Emission_3P0_3F3_488.35_experiment_TEST_16_06_2026_16_12_33_447.toml'
 sample = 'Outputs/Emission_3P0_3F2_488.35_experiment_16_06_2026_16_31_54_403.toml'
-sample = 'Outputs/3P0-3H5_488.35_Emission_scope_test_17_06_2026_16_01_01_651.toml'
+sample = 'Outputs/1D2-3H5_606.35_emission_scope_TEST_22_06_2026_13_32_58_466.toml'
+sample = 'Outputs/1D2-3H5_606.35_emission_scopeAMP_TEST_22_06_2026_13_54_10_344.toml'
+sample = 'Outputs/1D2-3H5_606.35_emission_scope_amp_22_06_2026_14_10_14_891.toml'
 
 data_path = Path(__file__).parent / sample
 
@@ -34,13 +36,19 @@ fig, ax = plt.subplots()
 #shifted_wavenumbers = -(wavenumbers - 16504-15.91) #shift so the first point is at 0 cm^-1 for 3H4, adjust as needed based on expected peak positions
 shifted_wavenumbers = wavenumbers
 
+#ax.plot(shifted_wavenumbers, areas/max(areas), label='My Data\n0.01 step, 3 avg, 0.2 slits')
 ax.plot(shifted_wavenumbers, areas)
 
-area_peaks, _ = signal.find_peaks(areas, height=0.00000001) #adjust height as needed based on expected peak amplitudes
-ax.plot(shifted_wavenumbers[area_peaks], areas[area_peaks], 'rx', label='Peaks')
+#jon_data = np.loadtxt('Outputs/690-720 1D2-3H5.dat', skiprows=1)
+#ax.plot(1e7/jon_data[:,0], jon_data[:,1]/max(jon_data[:,1]), label="Jon's Data")
+
+#area_peaks, _ = signal.find_peaks(areas, height=0.00000001) #adjust height as needed based on expected peak amplitudes
+#ax.plot(shifted_wavenumbers[area_peaks], areas[area_peaks], 'rx', label='Peaks')
+#for i in area_peaks:
+#    ax.annotate(f'{shifted_wavenumbers[i]:.2f} cm$^{{-1}}$', xy=(shifted_wavenumbers[i], areas[i]), xytext=(10, 10), textcoords='offset points', color='red', fontsize=7)
+
 ax.invert_xaxis()
-for i in area_peaks:
-    ax.annotate(f'{shifted_wavenumbers[i]:.2f} cm$^{{-1}}$', xy=(shifted_wavenumbers[i], areas[i]), xytext=(10, 10), textcoords='offset points', color='red', fontsize=7)
+
 
 def cmnminvert(x):
         """ 
@@ -59,8 +67,9 @@ secax = ax.secondary_xaxis('top', functions=(cmnminvert, cmnminvert))  #to put w
 secax.set_xlabel('Wavelength (nm)')
 secax.tick_params(axis = 'x')
 # note the double backslash: \\alpha
-ax.set_ylabel('Intensity (mV*s)')
+ax.set_ylabel('Intensity')
 ax.tick_params(axis = 'x')
 ax.tick_params(axis = 'y')
-ax.set_title('Emission Areas')
+ax.set_title('Emission Spectra')
+#plt.legend()
 plt.show()
