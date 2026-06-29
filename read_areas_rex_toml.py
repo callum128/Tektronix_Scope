@@ -16,6 +16,14 @@ sample = 'Outputs/Emission_3P0_3F2_488.35_experiment_16_06_2026_16_31_54_403.tom
 sample = 'Outputs/1D2-3H5_606.35_emission_scope_TEST_22_06_2026_13_32_58_466.toml'
 sample = 'Outputs/1D2-3H5_606.35_emission_scopeAMP_TEST_22_06_2026_13_54_10_344.toml'
 sample = 'Outputs/1D2-3H5_606.35_emission_scope_amp_22_06_2026_14_10_14_891.toml'
+sample ='Outputs/1D2-3H6_606.50_emission_scope_amp_TEST_23_06_2026_10_23_53_723.toml'
+sample = 'Outputs/1D2-3H6_606.50_emission_scope_amp_23_06_2026_10_46_40_147.toml'
+sample = 'Outputs/1D2-3F2_606.50_emission_scope_amp_23_06_2026_14_56_44_370.toml'
+sample = 'Outputs/1D2-3H6_606.50_emission_scope_amp_23_06_2026_10_46_40_147.toml'
+sample = 'Outputs/1D2-3H5_end_606.50_emission_scope_amp_29_06_2026_11_12_59_398.toml'
+sample = 'Outputs/1D2-3H4_576.90_emission_scope_ampTEST2_29_06_2026_12_50_00_417.toml'
+sample = 'Outputs/1D2-3H4_576.90_emission_scope_ampTEST3_29_06_2026_15_44_28_791.toml'
+sample = 'Outputs/1D2-3H4_576.90_emission_scope_amp_2_29_06_2026_15_54_39_353.toml'
 
 data_path = Path(__file__).parent / sample
 
@@ -27,24 +35,24 @@ data = load_rex_data(data_path, "polars")
 areas = np.array(data['DPO7104_TekTronix_scope_area'])
 print(f'First 10 areas from the scope: {areas[:10]}')
 spec_wavelengths = np.array(data['iHR550_wavelength (nm)'])
-print(f'Last spec wavelength: {spec_wavelengths[-1]}')
+print(f'Spec wavelength range: {spec_wavelengths[0]} - {spec_wavelengths[-1]}')
 
 wavenumbers = 1e7 / spec_wavelengths
 
 fig, ax = plt.subplots()
 
-#shifted_wavenumbers = -(wavenumbers - 16504-15.91) #shift so the first point is at 0 cm^-1 for 3H4, adjust as needed based on expected peak positions
-shifted_wavenumbers = wavenumbers
+shifted_wavenumbers = wavenumbers + 90 #shift so the first point is at 0 cm^-1 for 3H4, adjust as needed based on expected peak positions
+#shifted_wavenumbers = wavenumbers
 
-#ax.plot(shifted_wavenumbers, areas/max(areas), label='My Data\n0.01 step, 3 avg, 0.2 slits')
-ax.plot(shifted_wavenumbers, areas)
+ax.plot(shifted_wavenumbers, areas/max(areas), label='My Data\n0.02 step, 4 avg, 0.1 slits')
+#ax.plot(shifted_wavenumbers, areas, label='Spectra')
 
-#jon_data = np.loadtxt('Outputs/690-720 1D2-3H5.dat', skiprows=1)
-#ax.plot(1e7/jon_data[:,0], jon_data[:,1]/max(jon_data[:,1]), label="Jon's Data")
+jon_data = np.loadtxt('Outputs/600nm-650nm 0.01nm step D2 to H4 (2).dat', skiprows=1)
+ax.plot(1e7/jon_data[:,0], jon_data[:,1]/max(jon_data[:,1]), label="Jon's Data")
 
-#area_peaks, _ = signal.find_peaks(areas, height=0.00000001) #adjust height as needed based on expected peak amplitudes
-#ax.plot(shifted_wavenumbers[area_peaks], areas[area_peaks], 'rx', label='Peaks')
-#for i in area_peaks:
+# area_peaks, _ = signal.find_peaks(areas, height=1e-5, distance=80) #adjust height as needed based on expected peak amplitudes
+# ax.plot(shifted_wavenumbers[area_peaks], areas[area_peaks], 'rx', label='Peaks')
+# for i in area_peaks:
 #    ax.annotate(f'{shifted_wavenumbers[i]:.2f} cm$^{{-1}}$', xy=(shifted_wavenumbers[i], areas[i]), xytext=(10, 10), textcoords='offset points', color='red', fontsize=7)
 
 ax.invert_xaxis()
@@ -71,5 +79,5 @@ ax.set_ylabel('Intensity')
 ax.tick_params(axis = 'x')
 ax.tick_params(axis = 'y')
 ax.set_title('Emission Spectra')
-#plt.legend()
+plt.legend()
 plt.show()
