@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 from scipy import integrate, signal
 
 from pathlib import Path
@@ -21,49 +22,84 @@ sample = 'Outputs/1D2-3H6_606.50_emission_scope_amp_23_06_2026_10_46_40_147.toml
 sample = 'Outputs/1D2-3F2_606.50_emission_scope_amp_23_06_2026_14_56_44_370.toml'
 sample = 'Outputs/1D2-3H6_606.50_emission_scope_amp_23_06_2026_10_46_40_147.toml'
 sample = 'Outputs/1D2-3H5_end_606.50_emission_scope_amp_29_06_2026_11_12_59_398.toml'
-sample = 'Outputs/1D2-3H4_576.90_emission_scope_ampTEST2_29_06_2026_12_50_00_417.toml'
+sample3H4 = 'Outputs/1D2-3H4_576.90_emission_scope_ampTEST2_29_06_2026_12_50_00_417.toml'
 sample = 'Outputs/1D2-3H4_576.90_emission_scope_ampTEST3_29_06_2026_15_44_28_791.toml'
-sample = 'Outputs/1D2-3H4_576.90_emission_scope_amp_2_29_06_2026_15_54_39_353.toml'
+sample = 'Outputs/1D2-1G4_emission_scopeTEST_30_06_2026_10_23_45_257.toml'
+Indirect_3H4 = 'Outputs/Emission_(3P0)1D2_3H4_big_gate_488.35_experiment_16_06_2026_12_24_23_976.toml'
+Direct_3H4 = 'Outputs/1D2-3H4_576.90_emission_scope_amp_2_29_06_2026_15_54_39_353.toml'
+sample = 'Outputs/1D2-1G4_emission_scope_30_06_2026_11_26_28_142.toml'
 
-data_path = Path(__file__).parent / sample
+def loader(filename):
 
-# Read in the rex toml data format, reads in only the .data layer, ignoring configurations etc.This handles importing nested data
+        data_path = Path(__file__).parent / filename
 
-# load a polars dataframe (recomended)
-data = load_rex_data(data_path, "polars")
+        # Read in the rex toml data format, reads in only the .data layer, ignoring configurations etc.This handles importing nested data
 
-areas = np.array(data['DPO7104_TekTronix_scope_area'])
-print(f'First 10 areas from the scope: {areas[:10]}')
-spec_wavelengths = np.array(data['iHR550_wavelength (nm)'])
-print(f'Spec wavelength range: {spec_wavelengths[0]} - {spec_wavelengths[-1]}')
+        # load a polars dataframe (recomended)
+        data = load_rex_data(data_path, "polars")
 
-wavenumbers = 1e7 / spec_wavelengths
+        areas = np.array(data['DPO7104_TekTronix_scope_area'])
+        print(f'First 10 areas from the scope: {areas[:10]}')
+        spec_wavelengths = np.array(data['iHR550_wavelength (nm)'])
+        print(f'Spec wavelength range: {spec_wavelengths[0]} - {spec_wavelengths[-1]}')
+
+        wavenumbers = 1e7 / spec_wavelengths
+
+        return wavenumbers, areas
+
+
+def plot_areas(wavenumbers, areas, name, ax, off=0.0, color='k', prominence=0.01, distance=20, y_offset_multiplier=1.0):
+        shifted_wavenumbers = np.ones_like(wavenumbers) *start_laser-wavenumbers+off
+        norm_areas = (areas-min(areas))/max(areas) +(y_offset_multiplier-1.0)*y_offset
+        ax.plot(shifted_wavenumbers, norm_areas, label=name, color=color)
+        area_peaks, _ = signal.find_peaks(norm_areas, prominence=prominence, distance=distance) #adjust height as needed based on expected peak amplitudes
+        for i in area_peaks:
+                ax.annotate(f'{shifted_wavenumbers[i]:.1f}', xy=(shifted_wavenumbers[i], norm_areas[i]), xytext=(5, 10), textcoords='offset points', color=color, fontsize=7)
+
+
 
 fig, ax = plt.subplots()
+y_offset = 0.1
+start_laser = 16524 #the lowest top multiplet from the monitored transition, ideally the laser wavelength
+off1 = -4.085
+off2 = -2.17
+off3 = 58.65
 
-shifted_wavenumbers = wavenumbers + 90 #shift so the first point is at 0 cm^-1 for 3H4, adjust as needed based on expected peak positions
-#shifted_wavenumbers = wavenumbers
+# wavenumbers, areas = loader(sample3H4)
+# shifted_wavenumbers = np.ones_like(wavenumbers) *start_laser-wavenumbers-4.63  #shift so the first point is at 0 cm^-1 for 3H4, adjust as needed based on expected peak positions
+# ax.plot(shifted_wavenumbers, areas, label='Spectra')
+        
 
-ax.plot(shifted_wavenumbers, areas/max(areas), label='My Data\n0.02 step, 4 avg, 0.1 slits')
-#ax.plot(shifted_wavenumbers, areas, label='Spectra')
+wavenumbers, areas = loader(Indirect_3H4)
+step_size = np.mean(np.diff(1e7/wavenumbers))
+name = f'Indirect (3P0) Data\n{step_size:.2f} step, 15 avg, 0.2 slits'
+color = 'm'
+plot_areas(wavenumbers, areas, name, ax, off=off1, color=color, prominence=0.01, distance=20, y_offset_multiplier=2.0)
+
+wavenumbers, areas = loader(Direct_3H4)
+step_size = np.mean(np.diff(1e7/wavenumbers))
+name = f'Direct (1D2) Data\n{step_size:.2f} step, 4 avg, 0.1 slits, amplified'
+color = 'b'
+plot_areas(wavenumbers, areas, name, ax, off=off2, color=color, prominence=0.01, distance=20, y_offset_multiplier=3.0)
 
 jon_data = np.loadtxt('Outputs/600nm-650nm 0.01nm step D2 to H4 (2).dat', skiprows=1)
-ax.plot(1e7/jon_data[:,0], jon_data[:,1]/max(jon_data[:,1]), label="Jon's Data")
+wavelnumbers_jon = 1e7/jon_data[:,0]
+areas_jon = jon_data[:,1]
+name = 'Jon\'s Data'
+color = 'g'
+plot_areas(wavelnumbers_jon, areas_jon, name, ax, off=off3, color=color, prominence=0.01, distance=20, y_offset_multiplier=1.0)
 
-# area_peaks, _ = signal.find_peaks(areas, height=1e-5, distance=80) #adjust height as needed based on expected peak amplitudes
-# ax.plot(shifted_wavenumbers[area_peaks], areas[area_peaks], 'rx', label='Peaks')
+ax.xaxis.set_minor_locator(ticker.AutoMinorLocator())
+
+# area_peaks, _ = signal.find_peaks(norm_areas, height=0.00001, distance=80) #adjust height as needed based on expected peak amplitudes
+# ax.plot(shifted_wavenumbers[area_peaks], norm_areas[area_peaks], 'rx', label='Peaks')
 # for i in area_peaks:
-#    ax.annotate(f'{shifted_wavenumbers[i]:.2f} cm$^{{-1}}$', xy=(shifted_wavenumbers[i], areas[i]), xytext=(10, 10), textcoords='offset points', color='red', fontsize=7)
+#    ax.annotate(f'{shifted_wavenumbers[i]:.2f} cm$^{{-1}}$', xy=(shifted_wavenumbers[i], norm_areas[i]), xytext=(10, 10), textcoords='offset points', color='red', fontsize=7)
 
-ax.invert_xaxis()
+#ax.invert_xaxis()
 
 
 def cmnminvert(x):
-        """ 
-        returns 1/x with special treatment of x == 0
-        used to plot two axes - see below. 
-        """
-        #print('x:', x)
         x = np.array(x).astype(float)
         near_zero = np.isclose(x, 0)
         x[near_zero] = np.inf
@@ -78,6 +114,6 @@ secax.tick_params(axis = 'x')
 ax.set_ylabel('Intensity')
 ax.tick_params(axis = 'x')
 ax.tick_params(axis = 'y')
-ax.set_title('Emission Spectra')
+ax.set_title('Emission Spectra of 3H4 from 1D2 and 3P0 Excitation')
 plt.legend()
 plt.show()

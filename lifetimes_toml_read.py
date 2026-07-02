@@ -15,13 +15,16 @@ lifetime_3P0_3H5 = 'Outputs/3P0-3H5_488.35nm_Lifetime_16_06_2026_14_03_58_850.to
 lifetime_3P0_3F3 = 'Outputs/3P0-3F3_488.35nm_Lifetime_16_06_2026_16_04_14_279.toml'
 lifetime_3P0_PC = 'Outputs/3P0_544.36_488.35_lifetime_scope_test_17_06_2026_16_28_03_077.toml'
 lifetime_3P0_PC_sparse = 'Outputs/3P0_544.36_488.35_lifetime_scope_test_sparse_17_06_2026_16_32_38_246.toml'
+life = 'Outputs/1D2-3H4_577.0_50ohm_lifetime_scope_605.33_30_06_2026_09_12_27_582.toml'
+life = 'Outputs/1D2-3H4_577.0_50ohm_lifetime_scope_611.93_30_06_2026_09_37_11_570.toml'
+life = 'Outputs/1D2-1G4_606.50_50ohm_lifetime_scope_30_06_2026_11_00_29_600.toml'
 
-data_path = Path(__file__).parent / lifetime_3P0_PC_sparse
+data_path = Path(__file__).parent / life
 data = load_rex_data(data_path, "polars")
 
 waveforms = np.array(data['DPO7104_TekTronix_scope_waveform'][0])
 time_params = np.array(data['DPO7104_TekTronix_scope_time_from_trigger_parameters'][0])
-spec_wavelength = np.array(data['iHR550_wavelength (nm)'][0])
+#spec_wavelength = np.array(data['iHR550_wavelength (nm)'][0])
 
 print(time_params)
 
