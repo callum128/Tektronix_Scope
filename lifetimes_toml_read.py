@@ -18,6 +18,7 @@ lifetime_3P0_PC_sparse = 'Outputs/3P0_544.36_488.35_lifetime_scope_test_sparse_1
 life = 'Outputs/1D2-3H4_577.0_50ohm_lifetime_scope_605.33_30_06_2026_09_12_27_582.toml'
 life = 'Outputs/1D2-3H4_577.0_50ohm_lifetime_scope_611.93_30_06_2026_09_37_11_570.toml'
 life = 'Outputs/1D2-1G4_606.50_50ohm_lifetime_scope_30_06_2026_11_00_29_600.toml'
+life = 'Outputs/1D2-3H4_580.2_50ohm_lifetime_scope_13_07_2026_16_47_16_368.toml'
 
 data_path = Path(__file__).parent / life
 data = load_rex_data(data_path, "polars")

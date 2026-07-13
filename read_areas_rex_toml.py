@@ -16,18 +16,23 @@ sample = 'Outputs/Emission_3P0_3F3_488.35_experiment_TEST_16_06_2026_16_12_33_44
 sample = 'Outputs/Emission_3P0_3F2_488.35_experiment_16_06_2026_16_31_54_403.toml'
 sample = 'Outputs/1D2-3H5_606.35_emission_scope_TEST_22_06_2026_13_32_58_466.toml'
 sample = 'Outputs/1D2-3H5_606.35_emission_scopeAMP_TEST_22_06_2026_13_54_10_344.toml'
-sample = 'Outputs/1D2-3H5_606.35_emission_scope_amp_22_06_2026_14_10_14_891.toml'
+sample3H5 = 'Outputs/1D2-3H5_606.35_emission_scope_amp_22_06_2026_14_10_14_891.toml'
 sample ='Outputs/1D2-3H6_606.50_emission_scope_amp_TEST_23_06_2026_10_23_53_723.toml'
-sample = 'Outputs/1D2-3H6_606.50_emission_scope_amp_23_06_2026_10_46_40_147.toml'
 sample = 'Outputs/1D2-3F2_606.50_emission_scope_amp_23_06_2026_14_56_44_370.toml'
-sample = 'Outputs/1D2-3H6_606.50_emission_scope_amp_23_06_2026_10_46_40_147.toml'
-sample = 'Outputs/1D2-3H5_end_606.50_emission_scope_amp_29_06_2026_11_12_59_398.toml'
+sample3H6 = 'Outputs/1D2-3H6_606.50_emission_scope_amp_23_06_2026_10_46_40_147.toml'
+sample3H5end = 'Outputs/1D2-3H5_end_606.50_emission_scope_amp_29_06_2026_11_12_59_398.toml'
 sample3H4 = 'Outputs/1D2-3H4_576.90_emission_scope_ampTEST2_29_06_2026_12_50_00_417.toml'
 sample = 'Outputs/1D2-3H4_576.90_emission_scope_ampTEST3_29_06_2026_15_44_28_791.toml'
 sample = 'Outputs/1D2-1G4_emission_scopeTEST_30_06_2026_10_23_45_257.toml'
 Indirect_3H4 = 'Outputs/Emission_(3P0)1D2_3H4_big_gate_488.35_experiment_16_06_2026_12_24_23_976.toml'
 Direct_3H4 = 'Outputs/1D2-3H4_576.90_emission_scope_amp_2_29_06_2026_15_54_39_353.toml'
 sample = 'Outputs/1D2-1G4_emission_scope_30_06_2026_11_26_28_142.toml'
+sample3H4_580_amp = 'Outputs/1D2-3H4_580.2_emission_scope_ampTEST_13_07_2026_10_57_27_635.toml'
+sample3H4_580_no_amp = 'Outputs/1D2-3H4_580.2_emission_scope_no_ampTEST_13_07_2026_11_28_14_950.toml'
+sample3H4_580 = 'Outputs/1D2-3H4_580.2_emission_scope_amp_13_07_2026_12_03_47_480.toml'
+sample3H6_test = 'Outputs/1D2-3H6_606.45_emission_scope_ampTEST_13_07_2026_14_40_34_165.toml'
+sample3H6_full = 'Outputs/1D2-3H6_606.45_emission_scope_amp_13_07_2026_14_53_02_724.toml'
+sample3P03H4_4882 = 'Outputs/(3P0)1D2-3H4_488.2_emission_scopeTEST_14_07_2026_09_55_22_863.toml'
 
 def loader(filename):
 
@@ -59,18 +64,30 @@ def plot_areas(wavenumbers, areas, name, ax, off=0.0, color='k', prominence=0.01
 
 
 fig, ax = plt.subplots()
-y_offset = 0.1
 start_laser = 16524 #the lowest top multiplet from the monitored transition, ideally the laser wavelength
-off1 = -4.085
+
+#wavenumbers, areas = loader(sample3H6_test)
+#shifted_wavenumbers = np.ones_like(wavenumbers) *start_laser-wavenumbers-0.0  #shift so the first point is at 0 cm^-1 for 3H4, adjust as needed based on expected peak positions
+#ax.plot(wavenumbers, areas, label='Spectra')
+
+# wavenumbers, areas = loader(sample3P03H4_4882)
+# ax.plot(wavenumbers, areas, label='3P0 Spectra')
+
+# wavenumbers, areas = loader(sample3H4_580)
+# ax.plot(wavenumbers, areas, label='580 Spectra')
+
+# wavenumbers, areas = loader(Direct_3H4)
+# ax.plot(wavenumbers, areas, label='576 Spectra')
+
+# ax.invert_xaxis()
+
+
+y_offset = 0.1
+off1 = 72.7
 off2 = -2.17
 off3 = 58.65
 
-# wavenumbers, areas = loader(sample3H4)
-# shifted_wavenumbers = np.ones_like(wavenumbers) *start_laser-wavenumbers-4.63  #shift so the first point is at 0 cm^-1 for 3H4, adjust as needed based on expected peak positions
-# ax.plot(shifted_wavenumbers, areas, label='Spectra')
-        
-
-wavenumbers, areas = loader(Indirect_3H4)
+wavenumbers, areas = loader(sample3P03H4_4882)
 step_size = np.mean(np.diff(1e7/wavenumbers))
 name = f'Indirect (3P0) Data\n{step_size:.2f} step, 15 avg, 0.2 slits'
 color = 'm'
@@ -78,9 +95,15 @@ plot_areas(wavenumbers, areas, name, ax, off=off1, color=color, prominence=0.01,
 
 wavenumbers, areas = loader(Direct_3H4)
 step_size = np.mean(np.diff(1e7/wavenumbers))
-name = f'Direct (1D2) Data\n{step_size:.2f} step, 4 avg, 0.1 slits, amplified'
-color = 'b'
+name = f'Direct 576 (1D2) Data\n{step_size:.2f} step, 4 avg, 0.1 slits, amplified'
+color = 'r'
 plot_areas(wavenumbers, areas, name, ax, off=off2, color=color, prominence=0.01, distance=20, y_offset_multiplier=3.0)
+
+wavenumbers, areas = loader(sample3H4_580)
+step_size = np.mean(np.diff(1e7/wavenumbers))
+name = f'Direct 580 (1D2) Data\n{step_size:.2f} step, 8 avg, 0.1 slits, amplified'
+color = 'b'
+plot_areas(wavenumbers, areas, name, ax, off=70.5, color=color, prominence=0.01, distance=20, y_offset_multiplier=4.0)
 
 jon_data = np.loadtxt('Outputs/600nm-650nm 0.01nm step D2 to H4 (2).dat', skiprows=1)
 wavelnumbers_jon = 1e7/jon_data[:,0]
@@ -96,7 +119,6 @@ ax.xaxis.set_minor_locator(ticker.AutoMinorLocator())
 # for i in area_peaks:
 #    ax.annotate(f'{shifted_wavenumbers[i]:.2f} cm$^{{-1}}$', xy=(shifted_wavenumbers[i], norm_areas[i]), xytext=(10, 10), textcoords='offset points', color='red', fontsize=7)
 
-#ax.invert_xaxis()
 
 
 def cmnminvert(x):
@@ -110,10 +132,9 @@ ax.set_xlabel('Wavenumber (cm$^{-1}$)')
 secax = ax.secondary_xaxis('top', functions=(cmnminvert, cmnminvert))  #to put wavelength on top
 secax.set_xlabel('Wavelength (nm)')
 secax.tick_params(axis = 'x')
-# note the double backslash: \\alpha
 ax.set_ylabel('Intensity')
 ax.tick_params(axis = 'x')
 ax.tick_params(axis = 'y')
-ax.set_title('Emission Spectra of 3H4 from 1D2 and 3P0 Excitation')
+ax.set_title('Emission Spectra')
 plt.legend()
 plt.show()
