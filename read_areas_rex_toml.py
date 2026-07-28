@@ -19,14 +19,14 @@ sample = 'Outputs/1D2-3H5_606.35_emission_scope_TEST_22_06_2026_13_32_58_466.tom
 sample = 'Outputs/1D2-3H5_606.35_emission_scopeAMP_TEST_22_06_2026_13_54_10_344.toml'
 sample3H5 = 'Outputs/1D2-3H5_606.35_emission_scope_amp_22_06_2026_14_10_14_891.toml'
 sample ='Outputs/1D2-3H6_606.50_emission_scope_amp_TEST_23_06_2026_10_23_53_723.toml'
-sample = 'Outputs/1D2-3F2_606.50_emission_scope_amp_23_06_2026_14_56_44_370.toml'
+sample3F2 = 'Outputs/1D2-3F2_606.50_emission_scope_amp_23_06_2026_14_56_44_370.toml'
 sample3H6 = 'Outputs/1D2-3H6_606.50_emission_scope_amp_23_06_2026_10_46_40_147.toml'
 sample3H5end = 'Outputs/1D2-3H5_end_606.50_emission_scope_amp_29_06_2026_11_12_59_398.toml'
 sample3H4 = 'Outputs/1D2-3H4_576.90_emission_scope_ampTEST2_29_06_2026_12_50_00_417.toml'
 sample = 'Outputs/1D2-3H4_576.90_emission_scope_ampTEST3_29_06_2026_15_44_28_791.toml'
 sample = 'Outputs/1D2-1G4_emission_scopeTEST_30_06_2026_10_23_45_257.toml'
 Indirect_3H4 = 'Outputs/Emission_(3P0)1D2_3H4_big_gate_488.35_experiment_16_06_2026_12_24_23_976.toml'
-Direct_3H4 = 'Outputs/1D2-3H4_576.90_emission_scope_amp_2_29_06_2026_15_54_39_353.toml'
+site1_3H4_old = 'Outputs/1D2-3H4_576.90_emission_scope_amp_2_29_06_2026_15_54_39_353.toml'
 sample = 'Outputs/1D2-1G4_emission_scope_30_06_2026_11_26_28_142.toml'
 sample3H4_580_amp = 'Outputs/1D2-3H4_580.2_emission_scope_ampTEST_13_07_2026_10_57_27_635.toml'
 sample3H4_580_no_amp = 'Outputs/1D2-3H4_580.2_emission_scope_no_ampTEST_13_07_2026_11_28_14_950.toml'
@@ -49,6 +49,23 @@ sample3P03H6_dgates_test= 'Outputs/3P0-3H6_488.7_emission_scope_amp_dgatesTEST_2
 sample3P03H6_dgates = 'Outputs/3P0-3H6_488.7_emission_scope_amp_dgates_21_07_2026_15_00_39_175.toml'
 sample3P03H5_test2 = 'Outputs/3P0-3H5_488.75_emission_scope_amp_longTEST_22_07_2026_09_10_14_338.toml'
 sample3P03H6_sgates = 'Outputs/3P0-3H6_488.7_emission_scope_amp_sgates_quick_21_07_2026_16_57_04_816.toml'
+sample3P03H5_long = 'Outputs/3P0-3H5_488.75_emission_scope_amp_long_22_07_2026_09_23_15_995.toml'
+sample3H4_endTEST = 'Outputs/1D2-3H4_580.45_emission_scope_ampTEST_22_07_2026_13_07_25_604.toml'
+sample3H4_end = 'Outputs/1D2-3H4_580.45_emission_scope_amp_end_long_22_07_2026_15_18_06_876.toml'
+
+site1_3H4_test = 'Outputs/Site 1/Site1_1D2-3H4_577.0_emission_scope_ampTEST_24_07_2026_09_27_59_851.toml'
+site1_3H4 = 'Outputs/Site 1/Site1_1D2-3H4_577.0_emission_scope_amp_24_07_2026_09_50_05_490.toml'
+site1_3H5_test = 'Outputs/Site 1/Site1_1D2-3H5_577.0_emission_scopeTEST_24_07_2026_13_00_24_972.toml'
+site1_3H5_test2 = 'Outputs/Site 1/Site1_1D2-3H5_577.0_emission_scope_ampTEST_24_07_2026_13_47_43_933.toml'
+site1_3H5_half = 'Outputs/Site 1/Site1_1D2-3H5_577.0_emission_scope_amp_24_07_2026_14_15_53_876.toml'
+site1_3H5_test3 = 'Outputs/Site 1/Site1_1D2-3H5_577.1_emission_scope_ampTEST3_27_07_2026_09_06_56_534.toml'
+site1_3H5_start = 'Outputs/Site 1/Site1_1D2-3H5_577.1_emission_scope_amp_27_07_2026_09_24_43_045.toml'
+site1_3H5_end = 'Outputs/Site 1/Site1_1D2-3H5_577.1_emission_scope_amp_end_27_07_2026_13_15_33_945.toml'
+site1_3H6_test = 'Outputs/Site 1/Site1_1D2-3H6_577.1_emission_scopeTEST_27_07_2026_15_32_39_117.toml'
+site1_3H6_test2 = 'Outputs/Site 1/Site1_1D2-3H6_577.1_emission_scopeTEST2_27_07_2026_16_18_30_436.toml'
+site1_3H6_test3 = 'Outputs/Site 1/Site1_1D2-3H6_577.1_emission_scopeTEST3_27_07_2026_16_30_40_593.toml'
+site1_3H6_test5 = 'Outputs/Site 1/Site1_1D2-3H6_577.1_emission_scope_bigslitsTEST5_28_07_2026_09_35_39_017.toml'
+site1_3H6_test6 = 'Outputs/Site 1/Site1_1D2-3H6_577.1_emission_scope_TEST6_28_07_2026_10_03_12_655.toml'
 
 def loader(filename):
 
@@ -81,15 +98,12 @@ def plot_areas(wavenumbers, areas, name, ax, off=0.0, color='k', prominence=0.01
 
 title = 'Emission Spectra'
 fig, ax = plt.subplots()
-start_laser = 16524 #the lowest top multiplet from the monitored transition, ideally the laser wavelength
-
-#wavenumbers, areas = loader(sample3H6_test)
-#shifted_wavenumbers = np.ones_like(wavenumbers) *start_laser-wavenumbers-0.0  #shift so the first point is at 0 cm^-1 for 3H4, adjust as needed based on expected peak positions
-#ax.plot(wavenumbers, areas, label='Spectra')
+start_laser = 16524 #1D2 the lowest top multiplet from the monitored transition, ideally the laser wavelength
 
 # wavenumbers, areas = loader(sample3P03H6)
 # areas = (areas-min(areas))/max(areas)
 # ax.plot(wavenumbers, areas, label='3P0-3H6 Spectra small gates')
+
 
 # wavenumbers, areas = loader(sample3H4_580)
 # areas = (areas-min(areas))/max(areas)
@@ -112,38 +126,57 @@ start_laser = 16524 #the lowest top multiplet from the monitored transition, ide
 # areas_jon = jon_data[:,1][-500:-1]
 # areas_jon = (areas_jon-min(areas_jon))/max(areas_jon)
 # ax.plot(wavelnumbers_jon+10, areas_jon, label='Jon\'s Data 3P0-3F2')
+# title = '3P0-3F2 Emission Spectra'
 
-wavenumbers1, areas1 = loader(sample3P03H6)
-#areas = (areas-min(areas))/max(areas)
-ax.plot(wavenumbers1, areas1*1.45, label='Old Spectra, intensity multiplied by 1.45', linestyle='dotted', color='k')
+# wavenumbers, areas = loader(sample3H4_end)
+# areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers, areas*0.5, label='1D2-3H4_end Spectra')
 
-wavenumbers2, areas2 = loader(sample3P03H6_dgates)
-#areas = (areas-min(areas))/max(areas)
-ax.plot(wavenumbers2, areas2, label='34us time gates Spectra')
+# wavenumbers1, areas1 = loader(sample3P03H6)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers1, areas1*1.45, label='Old Spectra, intensity multiplied by 1.45', linestyle='dotted', color='k')
 
-wavenumbers3, areas3 = loader(sample3P03H6_sgates)
-#areas = (areas-min(areas))/max(areas)
-ax.plot(wavenumbers3, areas3, label='17us time gates Spectra (0.08 stepsize)')
+# wavenumbers2, areas2 = loader(sample3P03H6_dgates)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers2, areas2, label='34us time gates Spectra')
 
-areas3_resized = PchipInterpolator(1e7/wavenumbers3, areas3)(1e7/wavenumbers2)
-endclip = 100
-ax.plot(wavenumbers2[:-endclip], areas3_resized[:-endclip], label='17us time gates Spectra resized', linestyle='dashed')
+# wavenumbers3, areas3 = loader(sample3P03H6_sgates)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers3, areas3, label='17us time gates Spectra (0.08 stepsize)')
 
-fixed_areas = areas3_resized*2 - areas2 #Not sure if this is the way Jon meant
-ax.plot(wavenumbers2[:-endclip], fixed_areas[:-endclip], label='Fixed Spectra with 1D2 subtracted out')
+# areas3_resized = PchipInterpolator(1e7/wavenumbers3, areas3)(1e7/wavenumbers2)
+# endclip = 100
+# ax.plot(wavenumbers2[:-endclip], areas3_resized[:-endclip], label='17us time gates Spectra resized', linestyle='dashed')
 
-fixed_areas2 = areas1*1.45*2 - areas2 #Not sure if this is the way Jon meant
-ax.plot(wavenumbers2[:-endclip], fixed_areas2[:-endclip], label='Fixed Spectra with 1D2 subtracted out (Old Spectra)')
+# fixed_areas = areas3_resized*2 - areas2 #Not sure if this is the way Jon meant
+# ax.plot(wavenumbers2[:-endclip], fixed_areas[:-endclip], label='Fixed Spectra with 1D2-3H4 subtracted out\nresized17us*2 - 34us')
 
-title = '3P0-3H6 Emission Spectra with Different Time Gates'
+# #fixed_areas2 = areas1*1.45*2 - areas2 #Not sure if this is the way Jon meant
+# #ax.plot(wavenumbers2[:-endclip], fixed_areas2[:-endclip], label='Fixed Spectra with 1D2-3H4 subtracted out (Old Spectra)')
+
+# wavenumbers, areas = loader(sample3H4_580)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers, areas*0.1, label='1D2-3H4 Spectra')
+
+# title = '3P0-3H6 Emission Spectra with Different Time Gates'
 
 # wavenumbers, areas = loader(sample3P03H5)
 # #areas = (areas-min(areas))/max(areas)
 # ax.plot(wavenumbers, areas, label='Spectra')
 
-# wavenumbers, areas = loader(sample3P03H5_test2)
+# wavenumbers, areas = loader(sample3H5)
 # #areas = (areas-min(areas))/max(areas)
 # ax.plot(wavenumbers, areas, label='Spectra')
+
+wavenumbers, areas = loader(sample3H6_full)
+#areas = (areas-min(areas))/max(areas)
+ax.plot(wavenumbers, areas, label='Site 2 Spectra')
+
+
+wavenumbers, areas = loader(site1_3H6_test5)
+#areas = (areas-min(areas))/max(areas)
+ax.plot(wavenumbers, areas, label='Site 1 Spectra test5')
+
 
 ax.invert_xaxis()
 
