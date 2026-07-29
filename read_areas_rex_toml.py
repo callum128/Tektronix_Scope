@@ -66,6 +66,13 @@ site1_3H6_test2 = 'Outputs/Site 1/Site1_1D2-3H6_577.1_emission_scopeTEST2_27_07_
 site1_3H6_test3 = 'Outputs/Site 1/Site1_1D2-3H6_577.1_emission_scopeTEST3_27_07_2026_16_30_40_593.toml'
 site1_3H6_test5 = 'Outputs/Site 1/Site1_1D2-3H6_577.1_emission_scope_bigslitsTEST5_28_07_2026_09_35_39_017.toml'
 site1_3H6_test6 = 'Outputs/Site 1/Site1_1D2-3H6_577.1_emission_scope_TEST6_28_07_2026_10_03_12_655.toml'
+site1_3H6 = 'Outputs/Site 1/Site1_1D2-3H6_577.1_emission_scope_bigslits_28_07_2026_10_28_08_353.toml'
+site1_3F2_vis = 'Outputs/Site 1/Site1_1D2-3F2_577.1_emission_scope_bigslits_VIS_28_07_2026_14_10_54_263.toml'
+site1_3F2_test = 'Outputs/Site 1/Site1_1D2-3F2_emission_scopeTEST_28_07_2026_14_38_15_783.toml'
+site1_3F2_test2 = 'Outputs/Site 1/Site1_1D2-3F2_emission_scopeTEST2_28_07_2026_15_10_15_023.toml'
+site1_3F2 = 'Outputs/Site 1/Site1_1D2-3F2_emission_scope_bigslits_28_07_2026_15_35_02_892.toml'
+site1_3F2_end = 'Outputs/Site 1/Site1_1D2-3F2_emission_scope_bigslits_end_28_07_2026_16_39_56_443.toml'
+site1_3F2_end2_test = 'Outputs/Site 1/Site1_1D2-3F2_emission_scope_bigslits_end2TEST_29_07_2026_11_48_47_655.toml'
 
 def loader(filename):
 
@@ -164,19 +171,25 @@ start_laser = 16524 #1D2 the lowest top multiplet from the monitored transition,
 # #areas = (areas-min(areas))/max(areas)
 # ax.plot(wavenumbers, areas, label='Spectra')
 
-# wavenumbers, areas = loader(sample3H5)
-# #areas = (areas-min(areas))/max(areas)
-# ax.plot(wavenumbers, areas, label='Spectra')
-
-wavenumbers, areas = loader(sample3H6_full)
+wavenumbers, areas = loader(site1_3H6)
 #areas = (areas-min(areas))/max(areas)
-ax.plot(wavenumbers, areas, label='Site 2 Spectra')
+ax.plot(wavenumbers, areas, label='Site 1 3H6 Spectra')
 
-
-wavenumbers, areas = loader(site1_3H6_test5)
+wavenumbers, areas = loader(site1_3F2)
 #areas = (areas-min(areas))/max(areas)
-ax.plot(wavenumbers, areas, label='Site 1 Spectra test5')
+ax.plot(wavenumbers, areas, label='Site 1 3F2 Spectra')
 
+wavenumbers, areas = loader(site1_3F2_end)
+#areas = (areas-min(areas))/max(areas)
+ax.plot(wavenumbers, areas, label='Site 1 3F2 Spectra end')
+
+wavenumbers, areas = loader(site1_3F2_test2)
+#areas = (areas-min(areas))/max(areas)
+ax.plot(wavenumbers, areas, label='Site 1 3F2 Spectra NIR test2')
+
+wavenumbers, areas = loader(site1_3F2_end2_test)
+#areas = (areas-min(areas))/max(areas)
+ax.plot(wavenumbers, areas, label='Site 1 3F2 Spectra end2 test')
 
 ax.invert_xaxis()
 

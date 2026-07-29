@@ -14,7 +14,7 @@ def no_rise(v_all, t_all):
     #cut to find slope from trigger start
     #v_start = np.searchsorted(t_all, 0.0)
     v_all = -v_all
-    v_start = np.argmax(v_all) -40 #fit start at the clean top
+    v_start = np.argmax(v_all) +2 #fit start at the clean top
     v_end = -1 #np.argmax(v_all)+30
     
     v = v_all[v_start:v_end]
@@ -119,8 +119,9 @@ life3P0_3F2_657 = 'Outputs/3P0-3F2_488.35_50ohm_lifetime_scope_657_15_07_2026_17
 
 ls1_3H4 = 'Outputs/Site 1/Site1_1D2-3H4_577.0_50ohm_lifetime_scope_24_07_2026_12_43_50_768.toml'
 ls1_3H5 = 'Outputs/Site 1/Site1_1D2-3H5_577.1_50ohm_lifetime_scope_27_07_2026_15_11_14_738.toml'
+ls1_3H6 = 'Outputs/Site 1/Site1_1D2-3H6_577.1_50ohm_lifetime_scope_28_07_2026_13_38_00_722.toml'
 
-data_path = Path(__file__).parent / ls1_3H5
+data_path = Path(__file__).parent / ls1_3H6
 title = '1D2-3H5 Lifetime'
 data = load_rex_data(data_path, "polars")
 
