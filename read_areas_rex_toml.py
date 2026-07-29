@@ -73,6 +73,9 @@ site1_3F2_test2 = 'Outputs/Site 1/Site1_1D2-3F2_emission_scopeTEST2_28_07_2026_1
 site1_3F2 = 'Outputs/Site 1/Site1_1D2-3F2_emission_scope_bigslits_28_07_2026_15_35_02_892.toml'
 site1_3F2_end = 'Outputs/Site 1/Site1_1D2-3F2_emission_scope_bigslits_end_28_07_2026_16_39_56_443.toml'
 site1_3F2_end2_test = 'Outputs/Site 1/Site1_1D2-3F2_emission_scope_bigslits_end2TEST_29_07_2026_11_48_47_655.toml'
+site1_3F2_end2 = 'Outputs/Site 1/Site1_1D2-3F2_577.1_emission_scope_bigslits_end2_29_07_2026_12_01_40_676.toml'
+site1_3F2_end3 = 'Outputs/Site 1/Site1_1D2-3F2_577.1_emission_scope_bigslits_end3_29_07_2026_12_42_51_037.toml'
+site1_3F3 ='Outputs/Site 1/Site1_1D2-3F3_577.1_emission_scope_amp_29_07_2026_13_21_17_849.toml'
 
 def loader(filename):
 
@@ -185,11 +188,21 @@ ax.plot(wavenumbers, areas, label='Site 1 3F2 Spectra end')
 
 wavenumbers, areas = loader(site1_3F2_test2)
 #areas = (areas-min(areas))/max(areas)
-ax.plot(wavenumbers, areas, label='Site 1 3F2 Spectra NIR test2')
+ax.plot(wavenumbers, areas, label='Site 1 3F2 Spectra NIR 0.1 slits')
 
-wavenumbers, areas = loader(site1_3F2_end2_test)
+
+wavenumbers, areas = loader(site1_3F2_end2)
 #areas = (areas-min(areas))/max(areas)
-ax.plot(wavenumbers, areas, label='Site 1 3F2 Spectra end2 test')
+ax.plot(wavenumbers, areas, label='Site 1 3F2 Spectra end')
+
+wavenumbers, areas = loader(site1_3F2_end3)
+#areas = (areas-min(areas))/max(areas)
+ax.plot(wavenumbers, areas, label='Site 1 3F2 Spectra end')
+
+wavenumbers, areas = loader(site1_3F3)
+#areas = (areas-min(areas))/max(areas)
+ax.plot(wavenumbers, areas, label='Site 1 3F3')
+
 
 ax.invert_xaxis()
 

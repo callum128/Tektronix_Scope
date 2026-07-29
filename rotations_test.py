@@ -267,7 +267,7 @@ def get_complete_alignment(matrix_A, matrix_B, convention='zyx'):
     euler_angles = R.from_matrix(R_clean).as_euler(convention, degrees=True)
     return best_M, best_scale, tuple(euler_angles), best_permutation, best_rmse, has_reflection
 
-def plot_final_comparison(atoms_ref, atoms_to_rotate, M, scale, euler_angles, seq, mapping):
+def plot_final_comparison(atoms_ref, atoms_to_rotate, M, scale, mapping):
     """ Plots side by side to visually verify matches """
     atoms_to_rotate_sorted = atoms_to_rotate[mapping]
     
@@ -310,22 +310,25 @@ def plot_final_comparison(atoms_ref, atoms_to_rotate, M, scale, euler_angles, se
     plt.tight_layout()
 
 # Execution Block
-M, scale, calculated_angles, correct_mapping, final_rmse, inverted = get_complete_alignment(AbInitio, DFT)
+
+convention = 'zyz'
+
+M, scale, calculated_angles, correct_mapping, final_rmse, inverted = get_complete_alignment(AbInitio, DFT, convention)
 
 print("--- GEOMETRIC DIAGNOSTIC COMPLETE ---")
 print(f"Chirality/Inversion Inconsistency Found: {inverted}")
 print(f"True Radial Scaling Correction: {scale:.4f}")
 print(f"Residual Alignment RMS Error: {final_rmse:.4f} Å")
-print(f"Mapping Sequence Array: {correct_mapping}\n")
+print(f"Mapping Sequence Array: {correct_mapping}")
 print(AbInitio[correct_mapping])
-print(f"Extracted Euler Rotation Core Angles (ZYX):")
+print(f"Extracted Euler Rotation Matrix and Angles ({convention}):")
 print(M)
-print(f"  Z: {calculated_angles[0]:.2f}°, Y: {calculated_angles[1]:.2f}°, X: {calculated_angles[2]:.2f}°")
+print(f"gamma: {calculated_angles[0]:.2f}°, beta: {calculated_angles[1]:.2f}°, alpha: {calculated_angles[2]:.2f}°")
 print('\n(AbInitio*scale @ rotation_matrix.Transpose)[permuted] gives:')
 print((AbInitio*scale@M.T)[correct_mapping])
 print('DFT:')
 print(DFT)
 
-plot_final_comparison(DFT, AbInitio, M, scale, calculated_angles, 'zyx', correct_mapping)
+plot_final_comparison(DFT, AbInitio, M, scale, correct_mapping)
 plt.show()
 
