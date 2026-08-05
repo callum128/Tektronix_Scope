@@ -24,10 +24,10 @@ sample3H6 = 'Outputs/1D2-3H6_606.50_emission_scope_amp_23_06_2026_10_46_40_147.t
 sample3H5end = 'Outputs/1D2-3H5_end_606.50_emission_scope_amp_29_06_2026_11_12_59_398.toml'
 sample3H4 = 'Outputs/1D2-3H4_576.90_emission_scope_ampTEST2_29_06_2026_12_50_00_417.toml'
 sample = 'Outputs/1D2-3H4_576.90_emission_scope_ampTEST3_29_06_2026_15_44_28_791.toml'
-sample = 'Outputs/1D2-1G4_emission_scopeTEST_30_06_2026_10_23_45_257.toml'
+sample_ = 'Outputs/1D2-1G4_emission_scopeTEST_30_06_2026_10_23_45_257.toml'
 Indirect_3H4 = 'Outputs/Emission_(3P0)1D2_3H4_big_gate_488.35_experiment_16_06_2026_12_24_23_976.toml'
 site1_3H4_old = 'Outputs/1D2-3H4_576.90_emission_scope_amp_2_29_06_2026_15_54_39_353.toml'
-sample = 'Outputs/1D2-1G4_emission_scope_30_06_2026_11_26_28_142.toml'
+sample_1G4 = 'Outputs/1D2-1G4_emission_scope_30_06_2026_11_26_28_142.toml'
 sample3H4_580_amp = 'Outputs/1D2-3H4_580.2_emission_scope_ampTEST_13_07_2026_10_57_27_635.toml'
 sample3H4_580_no_amp = 'Outputs/1D2-3H4_580.2_emission_scope_no_ampTEST_13_07_2026_11_28_14_950.toml'
 sample3H4_580 = 'Outputs/1D2-3H4_580.2_emission_scope_amp_13_07_2026_12_03_47_480.toml'
@@ -76,6 +76,20 @@ site1_3F2_end2_test = 'Outputs/Site 1/Site1_1D2-3F2_emission_scope_bigslits_end2
 site1_3F2_end2 = 'Outputs/Site 1/Site1_1D2-3F2_577.1_emission_scope_bigslits_end2_29_07_2026_12_01_40_676.toml'
 site1_3F2_end3 = 'Outputs/Site 1/Site1_1D2-3F2_577.1_emission_scope_bigslits_end3_29_07_2026_12_42_51_037.toml'
 site1_3F3 ='Outputs/Site 1/Site1_1D2-3F3_577.1_emission_scope_amp_29_07_2026_13_21_17_849.toml'
+site1_3F3_end = 'Outputs/Site 1/Site1_1D2-3F3_577.1_emission_scope_amp_end_29_07_2026_17_09_07_384.toml'
+site1_3F3_2test = 'Outputs/Site 1/Site1_1D2-3F3_577.1_emission_scope2TEST_31_07_2026_10_49_53_235.toml'
+site1_3F4 = 'Outputs/Site 1/Site1_1D2-3F3_577.1_emission_scope2_31_07_2026_11_23_04_930.toml'
+site1_1G4_test = 'Outputs/Site 1/Site1_1D2-1G4_577.1_emission_scopeTEST_31_07_2026_15_15_22_560.toml'
+site1_1G4_test2 = 'Outputs/Site 1/Site1_1D2-1G4_577.1_emission_scopeTEST2_31_07_2026_16_17_14_118.toml'
+site1_1G4_test3 = 'Outputs/Site 1/Site1_1D2-1G4_577.1_emission_scopeTEST3_03_08_2026_10_20_49_369.toml'
+site1_1G4 = 'Outputs/Site 1/Site1_1D2-1G4_577.1_emission_scope_03_08_2026_11_09_25_530.toml'
+site1_indirect3H5 = 'Outputs/Site 1/Site1_(3P0)1D2-3H5_483.7_emission_scopeTEST_03_08_2026_16_37_37_290.toml'
+site1_3P0_3F2_test = 'Outputs/Site 1/Site1_3P0-3F2_483.8_emission_scope_ampTEST_04_08_2026_10_42_09_235.toml'
+site1_3P0_3F2 = 'Outputs/Site 1/Site1_3P0-3F2_483.8_emission_scope_amp_smallgates_04_08_2026_11_06_03_392.toml'
+site1_3P0_3F2_biggates = 'Outputs/Site 1/Site1_3P0-3F2_483.8_emission_scope_amp_biggates_04_08_2026_13_19_49_054.toml'
+site1_3P0_3F3_test = 'Outputs/Site 1/Site1_3P0-3F3_483.8_emission_scope_ampTEST_04_08_2026_14_57_33_117.toml'
+site1_3P0_3F3_test2 = 'Outputs/Site 1/Site1_3P0-3F3_483.8_emission_scope_ampTEST2_05_08_2026_09_37_37_288.toml'
+site1_3P0_3F3_test3 = 'Outputs/Site 1/Site1_3P0-3F3_483.8_emission_scope_ampTEST3_05_08_2026_10_51_27_444.toml'
 
 def loader(filename):
 
@@ -174,35 +188,118 @@ start_laser = 16524 #1D2 the lowest top multiplet from the monitored transition,
 # #areas = (areas-min(areas))/max(areas)
 # ax.plot(wavenumbers, areas, label='Spectra')
 
-wavenumbers, areas = loader(site1_3H6)
+# wavenumbers, areas = loader(site1_3H6)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers, areas, label='Site 1 3H6 Spectra')
+
+# wavenumbers, areas = loader(site1_3F2)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers, areas, label='Site 1 3F2 Spectra')
+
+# wavenumbers, areas = loader(site1_3F2_end)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers, areas, label='Site 1 3F2 Spectra end')
+
+# wavenumbers, areas = loader(site1_3F2_test2)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers, areas, label='Site 1 3F2 Spectra NIR 0.1 slits')
+
+
+# wavenumbers, areas = loader(site1_3F2_end2)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers, areas, label='Site 1 3F2 Spectra end')
+
+# wavenumbers, areas = loader(site1_3F2_end3)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers, areas, label='Site 1 3F2 Spectra end')
+
+# wavenumbers, areas = loader(site1_3F3)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers, areas, label='Site 1 3F3')
+
+# wavenumbers, areas = loader(site1_3F3_end)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers, areas, label='Site 1 3F3 end')
+
+# wavenumbers, areas = loader(site1_3F3_2test)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers, areas, label='Site 1 3F3 final test')
+
+# wavenumbers, areas = loader(site1_3F4)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers, areas, label='Site 1 3F3 + 3F4')
+
+# wavenumbers, areas = loader(sample_1G4)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers, areas, label='Site 2 1G4')
+
+# wavenumbers, areas = loader(site1_1G4)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers, areas, label='Site 1 1G4')
+
+# wavenumbers, areas = loader(site1_3H5_start)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers, areas, label='Site 1 3H5')
+
+# wavenumbers, areas = loader(sample3H5)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers, areas, label='Site 2 3H5')
+
+
+# wavenumbers, areas = loader(site1_indirect3H5)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers, areas, label='Site 1 Indirect 3H5 483.7nm')
+
+
+# wavenumbers, areas = loader(site1_3F2)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers, areas, label='Site 1 1D2-3F2')
+
+# wavenumbers, areas = loader(site1_3H4)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers, areas, label='Site 1 1D2-3H4')
+
+# wavenumbers, areas = loader(sample3H4_580)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers, areas, label='Site 2 1D2-3H4')
+
+# wavenumbers, areas = loader(sample3H4_end)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers, areas, label='Site 2 1D2-3H4')
+
+
+# wavenumbers, areas = loader(sample3P03F2)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers, areas, label='Site 2 3P0-3F2')
+
+# wavenumbers2, areas2 = loader(site1_3P0_3F2_biggates)
+# #areas = (areas-min(areas))/max(areas)
+# #ax.plot(wavenumbers2, areas2, label='Site 1 3P0-3F2 big gates')
+
+# wavenumbers, areas = loader(site1_3P0_3F2)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers[:len(wavenumbers2)], areas[:len(wavenumbers2)], label='Site 1 3P0-3F2 small gates')
+
+# fixed_areas = 2* areas[:len(wavenumbers2)] -areas2
+# ax.plot(wavenumbers2, fixed_areas, label='Site 1 3P0-3F2 small gates - big gates')
+
+wavenumbers, areas = loader(sample3P03F3)
 #areas = (areas-min(areas))/max(areas)
-ax.plot(wavenumbers, areas, label='Site 1 3H6 Spectra')
+ax.plot(wavenumbers, areas, label='Site 2 3P0-3F3')
 
-wavenumbers, areas = loader(site1_3F2)
+wavenumbers, areas = loader(site1_3P0_3F3_test)
 #areas = (areas-min(areas))/max(areas)
-ax.plot(wavenumbers, areas, label='Site 1 3F2 Spectra')
+ax.plot(wavenumbers, areas, label='Site 1 3P0-3F3 test')
 
-wavenumbers, areas = loader(site1_3F2_end)
+wavenumbers, areas = loader(site1_3P0_3F3_test3)
 #areas = (areas-min(areas))/max(areas)
-ax.plot(wavenumbers, areas, label='Site 1 3F2 Spectra end')
+ax.plot(wavenumbers, areas, label='Site 1 3P0-3F3 test 3')
 
-wavenumbers, areas = loader(site1_3F2_test2)
-#areas = (areas-min(areas))/max(areas)
-ax.plot(wavenumbers, areas, label='Site 1 3F2 Spectra NIR 0.1 slits')
-
-
-wavenumbers, areas = loader(site1_3F2_end2)
-#areas = (areas-min(areas))/max(areas)
-ax.plot(wavenumbers, areas, label='Site 1 3F2 Spectra end')
-
-wavenumbers, areas = loader(site1_3F2_end3)
-#areas = (areas-min(areas))/max(areas)
-ax.plot(wavenumbers, areas, label='Site 1 3F2 Spectra end')
-
-wavenumbers, areas = loader(site1_3F3)
-#areas = (areas-min(areas))/max(areas)
-ax.plot(wavenumbers, areas, label='Site 1 3F3')
-
+# jon_data = np.loadtxt('Outputs/683nm-760nm 0.1nm step P0 to 3F4.dat', skiprows=1)
+# wavelnumbers_jon = 1e7/(jon_data[:,0])
+# areas_jon = jon_data[:,1]
+# areas_jon = (areas_jon-min(areas_jon))/max(areas_jon)
+# ax.plot(wavelnumbers_jon, areas_jon, label='Jon\'s Data 3P0-3F3')
 
 ax.invert_xaxis()
 
