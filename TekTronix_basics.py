@@ -39,7 +39,7 @@ try:
 
     print(scope.query("*IDN?").strip())
 
-    scope.write(f"ACQuire:MODe SAMple")
+    #scope.write(f"ACQuire:MODe SAMple")
 
 
     # print("Testing HORizontal:RECOrdlength...")

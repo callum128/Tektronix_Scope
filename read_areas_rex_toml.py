@@ -90,6 +90,13 @@ site1_3P0_3F2_biggates = 'Outputs/Site 1/Site1_3P0-3F2_483.8_emission_scope_amp_
 site1_3P0_3F3_test = 'Outputs/Site 1/Site1_3P0-3F3_483.8_emission_scope_ampTEST_04_08_2026_14_57_33_117.toml'
 site1_3P0_3F3_test2 = 'Outputs/Site 1/Site1_3P0-3F3_483.8_emission_scope_ampTEST2_05_08_2026_09_37_37_288.toml'
 site1_3P0_3F3_test3 = 'Outputs/Site 1/Site1_3P0-3F3_483.8_emission_scope_ampTEST3_05_08_2026_10_51_27_444.toml'
+site1_3P0_3F3 = 'Outputs/Site 1/Site1_3P0-3F3_483.8_emission_scope_amp_05_08_2026_11_14_59_235.toml'
+site1_3P0_3F3_test4 = 'Outputs/Site 1/Site1_3P0-3F3_483.7_emission_scope_ampTEST4_10_08_2026_12_03_53_536.toml'
+site1_3P0_3F3_shiftedgates = 'Outputs/Site 1/Site1_3P0-3F3_483.7_emission_scope_amp_shiftedgates_10_08_2026_12_35_51_450.toml'
+site1_3P0_3H5_test = 'Outputs/Site 1/Site1_3P0-3H5_483.8_emission_scope_ampTEST_14_08_2026_09_36_59_112.toml'
+site1_3P0_3H5 = 'Outputs/Site 1/Site1_3P0-3H5_483.8_emission_scope_amp_14_08_2026_09_58_42_698.toml'
+site1_3P0_3H6_test = 'Outputs/Site 1/Site1_3P0-3H6_483.8_emission_scope_ampTEST2_14_08_2026_14_17_24_950.toml'
+#site1_3P0_3H6 = 
 
 def loader(filename):
 
@@ -276,30 +283,50 @@ start_laser = 16524 #1D2 the lowest top multiplet from the monitored transition,
 # #areas = (areas-min(areas))/max(areas)
 # #ax.plot(wavenumbers2, areas2, label='Site 1 3P0-3F2 big gates')
 
-# wavenumbers, areas = loader(site1_3P0_3F2)
-# #areas = (areas-min(areas))/max(areas)
-# ax.plot(wavenumbers[:len(wavenumbers2)], areas[:len(wavenumbers2)], label='Site 1 3P0-3F2 small gates')
+wavenumbers, areas = loader(site1_3P0_3F2)
+areas = (areas-min(areas))/max(areas)
+ax.plot(wavenumbers, areas, label='Site 1 3P0-3F2 small gates')
 
 # fixed_areas = 2* areas[:len(wavenumbers2)] -areas2
 # ax.plot(wavenumbers2, fixed_areas, label='Site 1 3P0-3F2 small gates - big gates')
 
-wavenumbers, areas = loader(sample3P03F3)
-#areas = (areas-min(areas))/max(areas)
-ax.plot(wavenumbers, areas, label='Site 2 3P0-3F3')
-
-wavenumbers, areas = loader(site1_3P0_3F3_test)
-#areas = (areas-min(areas))/max(areas)
-ax.plot(wavenumbers, areas, label='Site 1 3P0-3F3 test')
-
-wavenumbers, areas = loader(site1_3P0_3F3_test3)
-#areas = (areas-min(areas))/max(areas)
-ax.plot(wavenumbers, areas, label='Site 1 3P0-3F3 test 3')
+# wavenumbers, areas = loader(sample3P03F3)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers, areas, label='Site 2 3P0-3F3')
 
 # jon_data = np.loadtxt('Outputs/683nm-760nm 0.1nm step P0 to 3F4.dat', skiprows=1)
 # wavelnumbers_jon = 1e7/(jon_data[:,0])
 # areas_jon = jon_data[:,1]
 # areas_jon = (areas_jon-min(areas_jon))/max(areas_jon)
 # ax.plot(wavelnumbers_jon, areas_jon, label='Jon\'s Data 3P0-3F3')
+
+# wavenumbers, areas = loader(site1_3P0_3F3)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers, areas, label='Site 1 3P0-3F3')
+
+# wavenumbers, areas = loader(site1_3P0_3F3_test4)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers, areas, label='Site 1 3P0-3F3 Test 4')
+
+# wavenumbers, areas = loader(site1_3P0_3F3_shiftedgates)
+# #areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers, areas, label='Site 1 3P0-3F3 Shifted Gates')
+
+# wavenumbers, areas = loader(sample3P03H5)
+# areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers, areas, label='Site 2 3P0-3H5')
+
+# wavenumbers, areas = loader(site1_3P0_3H5)
+# areas = (areas-min(areas))/max(areas)
+# ax.plot(wavenumbers, areas, label='Site 1 3P0-3H5')
+
+wavenumbers, areas = loader(sample3P03H6)
+areas = (areas-min(areas))/max(areas)
+ax.plot(wavenumbers, areas, label='Site 2 3P0-3H6')
+
+wavenumbers, areas = loader(site1_3P0_3H6_test)
+areas = (areas-min(areas))/max(areas)
+ax.plot(wavenumbers, areas, label='Site 1 3P0-3H6 Test')
 
 ax.invert_xaxis()
 

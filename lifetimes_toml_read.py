@@ -14,7 +14,7 @@ def no_rise(v_all, t_all):
     #cut to find slope from trigger start
     #v_start = np.searchsorted(t_all, 0.0)
     v_all = -v_all
-    v_start = np.argmax(v_all) -0 #fit start at the clean top
+    v_start = np.argmax(v_all) +0 #fit start at the clean top
     v_end = -1 #np.argmax(v_all)+30
     
     v = v_all[v_start:v_end]
@@ -116,13 +116,15 @@ life3P0_3F2_650 = 'Outputs/3P0-3F2_488.35_50ohm_lifetime_scope_650_15_07_2026_17
 life3P0_3F2_653 = 'Outputs/3P0-3F2_488.35_50ohm_lifetime_scope_653_15_07_2026_17_23_00_868.toml'
 life3P0_3F2_657 = 'Outputs/3P0-3F2_488.35_50ohm_lifetime_scope_657_15_07_2026_17_28_44_365.toml'
 
+#site 1 lifetimes
 
 ls1_3H4 = 'Outputs/Site 1/Site1_1D2-3H4_577.0_50ohm_lifetime_scope_24_07_2026_12_43_50_768.toml'
 ls1_3H5 = 'Outputs/Site 1/Site1_1D2-3H5_577.1_50ohm_lifetime_scope_27_07_2026_15_11_14_738.toml'
 ls1_3H6 = 'Outputs/Site 1/Site1_1D2-3H6_577.1_50ohm_lifetime_scope_28_07_2026_13_38_00_722.toml'
 ls1_3F4 = 'Outputs/Site 1/Site1_1D2-3F4_577.1_50ohm_lifetime_scope_31_07_2026_14_48_47_899.toml'
 ls1_1G4 = 'Outputs/Site 1/Site1_1D2-1G4_577.1_50ohm_lifetime_scope_03_08_2026_15_46_40_140.toml'
-ls1_3P0_3F2_654 = 'Outputs/Site 1/Site1_3P0-3F2_483.7_50ohm_lifetime_scope_04_08_2026_15_24_21_974.toml'
+
+ls1_3P0_3F2_654 = 'Outputs/Site 1/Site1_3P0-3F2_483.7_50ohm_lifetime_scope_04_08_2026_15_24_21_974.toml' #all 3P0
 ls1_3P0_3F2_645 = 'Outputs/Site 1/Site1_3P0-3F2_483.7_50ohm_lifetime_scope_04_08_2026_15_37_47_654.toml'
 ls1_3P0_3F2_640 = 'Outputs/Site 1/Site1_3P0-3F2_483.7_50ohm_lifetime_scope_640_04_08_2026_15_47_09_683.toml'
 ls1_3P0_3F2_647 = 'Outputs/Site 1/Site1_3P0-3F2_483.7_50ohm_lifetime_scope_647_04_08_2026_15_59_44_810.toml'
@@ -131,8 +133,22 @@ ls1_3P0_3F2_652 = 'Outputs/Site 1/Site1_3P0-3F2_483.7_50ohm_lifetime_scope_652_0
 ls1_3P0_3F2_660 = 'Outputs/Site 1/Site1_3P0-3F2_483.7_50ohm_lifetime_scope_660_04_08_2026_16_36_25_515.toml'
 ls1_3P0_3F2_665 = 'Outputs/Site 1/Site1_3P0-3F2_483.7_50ohm_lifetime_scope_665_04_08_2026_16_48_57_228.toml'
 
-data_path = Path(__file__).parent / ls1_3P0_3F2_665
-title = '1D2-3H5 Lifetime'
+ls1_3P0_3F3_705 = 'Outputs/Site 1/Site1_3P0-3F3_483.8_50ohm_lifetime_scope_705_05_08_2026_15_32_48_389.toml' #1D2
+ls1_3P0_3F3_702 = 'Outputs/Site 1/Site1_3P0-3F3_483.8_50ohm_lifetime_scope_702_05_08_2026_15_47_30_979.toml' #1D2
+ls1_3P0_3F3_735 = 'Outputs/Site 1/Site1_3P0-3F3_483.8_50ohm_lifetime_scope_735_05_08_2026_16_02_34_844.toml'
+ls1_3P0_3F3_704 = 'Outputs/Site 1/Site1_3P0-3F3_483.8_50ohm_lifetime_scope_704_TRUE_05_08_2026_16_28_08_352.toml'
+ls1_3P0_3F3_695 = 'Outputs/Site 1/Site1_3P0-3F3_483.8_50ohm_lifetime_scope_695_05_08_2026_16_39_53_744.toml'
+ls1_3P0_3F3_707 = 'Outputs/Site 1/Site1_3P0-3F3_483.8_50ohm_lifetime_scope_707_05_08_2026_16_54_42_196.toml'
+ls1_3P0_3F3_715 = 'Outputs/Site 1/Site1_3P0-3F3_483.8_50ohm_lifetime_scope_715_05_08_2026_17_06_31_493.toml'
+ls1_3P0_3F3_717 = 'Outputs/Site 1/Site1_3P0-3F3_483.8_50ohm_lifetime_scope_717_05_08_2026_17_18_21_192.toml'
+ls1_3P0_3F3_721 = 'Outputs/Site 1/Site1_3P0-3F3_483.8_50ohm_lifetime_scope_721_05_08_2026_17_27_54_984.toml'
+
+ls1_3P0_3H5_543 = 'Outputs/Site 1/Site1_3P0-3H5_483.8_50ohm_lifetime_scope_14_08_2026_12_44_32_756.toml'
+ls1_3P0_3H5_560 = 'Outputs/Site 1/Site1_3P0-3H5_483.8_50ohm_lifetime_scope_560_14_08_2026_13_01_42_315.toml'
+ls1_3P0_3H6_610 = 'Outputs/Site 1/Site1_3P0-3H6_483.8_50ohm_lifetime_scope_610_14_08_2026_14_07_40_860.toml'
+
+data_path = Path(__file__).parent / ls1_3P0_3H6_610
+title = 'Lifetime'
 data = load_rex_data(data_path, "polars")
 
 waveforms = np.array(data['DPO7104_TekTronix_scope_waveform'][0])
