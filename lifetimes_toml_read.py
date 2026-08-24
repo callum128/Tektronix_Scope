@@ -108,6 +108,9 @@ life3P0_3H6_615 = 'Outputs/3P0-3H6_488.35_50ohm_lifetime_scope_615_15_07_2026_12
 life3P0_3H6_607 = 'Outputs/3P0-3H6_488.35_50ohm_lifetime_scope_607_15_07_2026_12_56_00_366.toml'
 life3P0_3H6_621 = 'Outputs/3P0-3H6_488.35_50ohm_lifetime_scope_621_15_07_2026_17_34_27_687.toml'
 life3P0_3F3 = 'Outputs/3P0-3F3_488.7_50ohm_lifetime_scope_21_07_2026_14_20_47_002.toml'
+life_1D2_3F3 = 'Outputs/1D2-3F3_606.5_50ohm_lifetime_scope_NIR_17_08_2026_15_21_40_768.toml'
+life_1D2_3F2 = 'Outputs/1D2-3F2_606.5_50ohm_lifetime_scope_NIR_bigslits_18_08_2026_13_21_43_600.toml'
+life_1D2_3F2_small = 'Outputs/1D2-3F2_606.5_50ohm_lifetime_scope_NIR_smallslits_18_08_2026_13_38_45_861.toml'
 
 life3P0_3F2_647 = 'Outputs/3P0-3F2_488.35_50ohm_lifetime_scope_647_15_07_2026_16_37_12_584.toml'
 life3P0_3F2_648 = 'Outputs/3P0-3F2_488.35_50ohm_lifetime_scope_648_15_07_2026_16_51_27_487.toml'
@@ -147,7 +150,7 @@ ls1_3P0_3H5_543 = 'Outputs/Site 1/Site1_3P0-3H5_483.8_50ohm_lifetime_scope_14_08
 ls1_3P0_3H5_560 = 'Outputs/Site 1/Site1_3P0-3H5_483.8_50ohm_lifetime_scope_560_14_08_2026_13_01_42_315.toml'
 ls1_3P0_3H6_610 = 'Outputs/Site 1/Site1_3P0-3H6_483.8_50ohm_lifetime_scope_610_14_08_2026_14_07_40_860.toml'
 
-data_path = Path(__file__).parent / ls1_3P0_3H6_610
+data_path = Path(__file__).parent / life_1D2_3F2_small
 title = 'Lifetime'
 data = load_rex_data(data_path, "polars")
 

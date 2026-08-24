@@ -1,0 +1,20 @@
+[experiment.info]
+name = "Callum Clausen"
+email = "ccl128@uclive.ac.nz"
+experiment_name = "1D2_from_1D2-1G4_excitation"
+experiment_description = "This is an example"
+
+[device.DPO7104_TekTronix_scope]
+averages = 8
+start_bound = 1.0e-6
+end_bound = 5.0e-3
+area = true
+waveform = false
+trigger = false
+
+[device.Gl100_Dye_laser]
+initial_position = 590
+end_position = 610
+step_size = 0.02
+start_position = 590
+dye = "R610"
