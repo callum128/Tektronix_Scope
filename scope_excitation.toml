@@ -1,8 +1,8 @@
 [experiment.info]
 name = "Callum Clausen"
-email = "ccl128@uclive.ac.nz"
-experiment_name = "1D2_from_1D2-1G4_excitation"
-experiment_description = "This is an example"
+email = "callum.clausen@pg.canterbury.ac.nz"
+experiment_name = "EX_S1_1D2_from_1D2-1G4_excitation"
+experiment_description = "Spec at ---, slits --, NIR, no amp"
 
 [device.DPO7104_TekTronix_scope]
 averages = 8

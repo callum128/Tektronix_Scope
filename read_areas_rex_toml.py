@@ -103,6 +103,7 @@ site1_3P0_3H5 = 'Outputs/Site 1/Site1_3P0-3H5_483.8_emission_scope_amp_14_08_202
 site1_3P0_3H6_test = 'Outputs/Site 1/Site1_3P0-3H6_483.8_emission_scope_ampTEST2_14_08_2026_14_17_24_950.toml'
 site1_3P0_3H6 = 'Outputs/Site 1/Site1_3P0-3H6_483.8_emission_scope_amp_14_08_2026_14_37_25_765.toml'
 site1_3F2_test = 'Outputs/Site 1/Site1_1D2-3F2_576.9_emission_scope_amp_bigslitsTEST_18_08_2026_14_12_44_832.toml'
+site1_1G4_bigtest = 'Outputs/Site 1/Site1_1D2-1G4_577.0_emission_scopeTEST_25_08_2026_09_52_40_029.toml'
 
 def loader(filename):
 
@@ -326,25 +327,21 @@ start_laser = 16524 #1D2 the lowest top multiplet from the monitored transition,
 # areas = (areas-min(areas))/max(areas)
 # ax.plot(wavenumbers, areas, label='Site 1 3P0-3H5')
 
-wavenumbers, areas = loader(sample3F3)
-areas = (areas-min(areas))/max(areas)
-ax.plot(wavenumbers, areas, label='Site 2 1D2-3F3')
-
-wavenumbers, areas = loader(sample3F2)
-areas = (areas-min(areas))/max(areas)
-ax.plot(wavenumbers, areas, label='Site 2 1D2-3F2')
-
-wavenumbers, areas = loader(site1_3F2)
-areas = (areas-min(areas))/max(areas)
-ax.plot(wavenumbers, areas, label='Site 1 1D2-3F2')
-
 wavenumbers, areas = loader(site1_3F3)
 areas = (areas-min(areas))/max(areas)
-ax.plot(wavenumbers, areas, label='Site 1 1D2-3F3')
+ax.plot(wavenumbers, areas, label='Site 1 1D2-3F3+3F4')
 
-wavenumbers, areas = loader(site1_3F2_test)
+wavenumbers, areas = loader(site1_1G4)
 areas = (areas-min(areas))/max(areas)
-ax.plot(wavenumbers, areas, label='Site 1 1D2-3F2 Test')
+ax.plot(wavenumbers, areas, label='Site 1 1D2-1G4')
+
+wavenumbers, areas = loader(site1_1G4_bigtest)
+areas = (areas-min(areas))/max(areas)
+ax.plot(wavenumbers, areas, label='Site 1 1D2-1G4 Big Test')
+
+wavenumbers, areas = loader(sample_1G4)
+areas = (areas-min(areas))/max(areas)
+ax.plot(wavenumbers, -areas, label='Site 2 1D2-1G4')
 
 ax.invert_xaxis()
 
