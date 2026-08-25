@@ -1,7 +1,7 @@
 [experiment.info]
 name = "Callum Clausen"
 email = "callum.clausen@pg.canterbury.ac.nz"
-experiment_name = "EX_S1_1D2_from_1D2-1G4_excitation"
+experiment_name = "EX_site1_1D2_from_1D2-1G4_excitation"
 experiment_description = "Spec at ---, slits --, NIR, no amp"
 
 [device.DPO7104_TekTronix_scope]
@@ -11,8 +11,9 @@ end_bound = 5.0e-3
 area = true
 waveform = false
 trigger = false
+samples_saved = 50
 
-[device.Gl100_Dye_laser]
+[device.GL100_Dye_Laser]
 initial_position = 590
 end_position = 610
 step_size = 0.02

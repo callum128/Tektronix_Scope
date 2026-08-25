@@ -37,4 +37,4 @@ if __name__ == "__main__":
     excitation_experiment()
 
 #set spec using spectrometer_gui first
-#run: rex run .\Scripts\scope_excitation.py -o \Outputs\
+#run: rex run .\Scripts\scope_excitation.py -o .\Outputs\
